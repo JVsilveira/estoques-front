@@ -3,6 +3,7 @@ import { getDocument, GlobalWorkerOptions } from "pdfjs-dist"
 import "./Entrada.css"
 import { useContext } from "react"
 import { TransferEntrada } from "../Transfer/TransferEntrada"
+import axios from "axios"
 
 // Configure o caminho do worker global
 GlobalWorkerOptions.workerSrc =
@@ -263,7 +264,9 @@ function Entrada() {
       fileReader.readAsArrayBuffer(file)
     }
   }
-  const handleEnviarParaPlanilha = () => {
+  const handleEnviarParaServidor = async () => {
+    const token = localStorage.getItem("token") // ou outro método seguro
+
     const newData = {
       serialNumber: serialNumber || "N/A",
       modelo: notebookModel || "N/A",
@@ -271,10 +274,23 @@ function Entrada() {
       modeloMonitor: modelMonitor || "N/A",
       serialMonitor: serialMonitor || "N/A",
       accessories,
-      disponibilidade: "Disponível", // ✅ Aqui
+      disponibilidade: "Disponível",
     }
-    addData(newData)
-    alert("Dados enviados para a planilha com sucesso!")
+
+    try {
+      const response = await axios.post(
+        "/api/entrada", // Ajuste conforme URL real
+        newData,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
+      alert("Dados enviados ao servidor com sucesso!")
+      console.log("Resposta do backend:", response.data)
+    } catch (error) {
+      console.error("Erro ao enviar para o servidor:", error)
+      setError("Erro ao enviar dados para o servidor.")
+    }
   }
 
   return (
@@ -313,7 +329,7 @@ function Entrada() {
             </ul>
           </div>
         </div>
-        <button onClick={handleEnviarParaPlanilha}>Enviar para Planilha</button>
+        <button onClick={handleEnviarParaServidor}>Enviar para Planilha</button>
       </div>
     </div>
   )
