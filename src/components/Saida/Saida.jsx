@@ -49,7 +49,6 @@ const enviarParaPlanilha = () => {
 };
 
 
-  // Funções específicas para capturar os acessórios
   const captureHeadset = (text, peripheralsList) => {
     // Ajusta a regex para pegar o Headset seguido do status Sim/Não
     const headsetRegex = /Headset\s*\(.*?\)\s*(Sim|Não)/i
