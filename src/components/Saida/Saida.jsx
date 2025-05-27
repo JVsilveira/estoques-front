@@ -41,7 +41,7 @@ const enviarParaPlanilha = () => {
 
   if (existe) {
     marcarItemComoEmUso(itemSaida, itensDisponiveis, setData);
-    marcarComoSaiu(itemSaida);  // <-- usando a função do contexto para adicionar
+    marcarComoSaiu(itemSaida);  
     alert("Item atualizado como 'Em Uso' na planilha.");
   } else {
     alert("Item não encontrado na planilha!");
