@@ -1,0 +1,65 @@
+.planilha {
+    display: flex;  
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100vw;
+    background-color: #3863ae;
+    overflow: hidden;
+  }
+  
+  .inserir {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 70%;
+    height: 70%;
+    background-color: antiquewhite;
+    border-radius: 15px;
+  }
+  
+  .planilha-container {
+    margin-top: 5vh;
+    margin-bottom: 2vh;
+    display: flex;
+    align-items: start;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+  }
+  
+  .planilha-tabela {
+    width: 70%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  
+  .planilha-tabela th, .planilha-tabela td {
+    border: 1px solid black;
+    padding: 10px;
+    text-align: center;
+  }
+  
+  .planilha-tabela th {
+    background-color: crimson;
+    position: sticky;
+    top: 0;
+    z-index: 1; /* Garante que o cabeçalho fique acima do conteúdo */
+  }
+  
+  .planilha-tabela td {
+    background-color: white;
+    color: black;
+  }
+  
+  .btn-download {
+    margin-top: 5vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 10%;
+  }

@@ -1,0 +1,91 @@
+.cadastro {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100vw;
+    background-color: #3863ae;
+    overflow: hidden;
+  }
+  
+  .inserir {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    width: 70%;
+    height: 100%; /* Diminui para não ocupar 100% da tela */
+    background-color: antiquewhite;
+    border-radius: 15px;
+  }
+  
+  .ativos-cadastro {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    color: black;
+    height: 100%;
+    width: 100%;
+    overflow-y: auto;
+  }
+  
+  .triagem {
+    margin-top: 2vh;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    
+  }
+  
+  .planilha-container {
+    margin-top: 10px;
+    margin-bottom: 2vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: auto;
+    overflow-y: auto;
+    flex: 1;
+  }
+  
+  .planilha-tabela {
+    width: 80%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  
+  .planilha-tabela th,
+  .planilha-tabela td {
+    border: 1px solid black;
+    padding: 10px;
+    text-align: center;
+  }
+  
+  .planilha-tabela th {
+    background-color: crimson;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+  
+  .planilha-tabela td {
+    background-color: white;
+    color: black;
+  }
+
+  .planilha-tabela td:nth-child(5), .planilha-tabela th:nth-child(5) {
+     width: 200px; 
+}
+.botao{
+    display: flex;
+    width: 100%;
+    
+    height: 10%;
+    align-items: center;
+    justify-content: center;
+}
