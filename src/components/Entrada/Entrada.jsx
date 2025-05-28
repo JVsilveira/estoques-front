@@ -264,32 +264,45 @@ function Entrada() {
       fileReader.readAsArrayBuffer(file)
     }
   }
-  const handleEnviarParaServidor = async () => {
-    const token = localStorage.getItem("token") // ou outro método seguro
 
-    const newData = {
+  const handleEnviarParaServidor = async () => {
+    const token = localStorage.getItem("token")
+    const linhasParaPlanilha = []
+
+    // Linha do Notebook
+    linhasParaPlanilha.push({
+      tipo: "Notebook",
       serialNumber: serialNumber || "N/A",
       modelo: notebookModel || "N/A",
       marca: notebookBrand || "N/A",
-      modeloMonitor: modelMonitor || "N/A",
-      serialMonitor: serialMonitor || "N/A",
+      modeloMonitor: "N/A",
+      serialMonitor: "N/A",
       accessories,
       disponibilidade: "Disponível",
+    })
+
+    // Linha do Monitor, se houver
+    if (modelMonitor || serialMonitor) {
+      linhasParaPlanilha.push({
+        tipo: "Monitor",
+        serialNumber: serialMonitor || "N/A",
+        modelo: modelMonitor || "N/A",
+        marca: "N/A",
+        accessories: [],
+        disponibilidade: "Disponível",
+      })
     }
 
     try {
-      const response = await axios.post(
-        "/api/entrada", // Ajuste conforme URL real
-        newData,
-        {
+      for (const linha of linhasParaPlanilha) {
+        await axios.post("/api/entrada", linha, {
           headers: { Authorization: `Bearer ${token}` },
-        }
-      )
+        })
+      }
       alert("Dados enviados ao servidor com sucesso!")
-      console.log("Resposta do backend:", response.data)
     } catch (error) {
       alert("Erro ao enviar dados para o servidor.")
-      
+      console.error("Erro ao enviar:", error)
     }
   }
 

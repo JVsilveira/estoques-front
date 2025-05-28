@@ -1,10 +1,10 @@
 import React, { useState, useContext } from "react"
 import { getDocument, GlobalWorkerOptions } from "pdfjs-dist"
 import "./Saida.css"
-import { TransferEntrada } from "../Transfer/TransferEntrada";
-import { TransferSaida } from "../Transfer/TransferSaida";
-import { useItensDisponiveis } from "../hooks/useItensDisponiveis";
-import api from "../../api/api";
+import { TransferEntrada } from "../Transfer/TransferEntrada"
+import { TransferSaida } from "../Transfer/TransferSaida"
+import { useItensDisponiveis } from "../hooks/useItensDisponiveis"
+import api from "../../api/api"
 
 // Configure o caminho do worker global
 GlobalWorkerOptions.workerSrc =
@@ -21,38 +21,60 @@ function Saída() {
   const [nfNumber, setNfNumber] = useState("")
   const [modelMonitor, setModelMonitor] = useState("")
   const [serialMonitor, setSerialMonitor] = useState("")
-  const { setData } = useContext(TransferEntrada);
-  const { itemSaiu, marcarComoSaiu } = useContext(TransferSaida);
+  const { setData } = useContext(TransferEntrada)
+  const { itemSaiu, marcarComoSaiu } = useContext(TransferSaida)
 
-
- const enviarParaPlanilha = async () => {
-    const itemSaida = {
+  const enviarParaPlanilha = async () => {
+    const itemSaidaNotebook = {
       serialNumber,
       modelo: notebookModel,
       marca: notebookBrand,
-      modeloMonitor: modelMonitor,
-      serialMonitor: serialMonitor,
       accessories,
       disponibilidade: "Em Uso",
       assetNumber,
-      nfNumber
-    };
+      nfNumber,
+    }
 
+    // Atualiza o monitor separadamente, se houver
+    if (modelMonitor && serialMonitor) {
+      const itemSaidaMonitor = {
+        serialNumber: serialMonitor,
+        modelo: modelMonitor,
+        tipo: "Monitor",
+        disponibilidade: "Em Uso",
+        nfNumber,
+      }
+
+      try {
+        const responseMonitor = await api.get(`/planilha/item/${serialMonitor}`)
+        if (responseMonitor.data && responseMonitor.data.exists) {
+          await api.put(`/planilha/item/${serialMonitor}`, itemSaidaMonitor)
+          alert("Monitor atualizado como 'Em Uso' na planilha.")
+        } else {
+          alert("Monitor não encontrado na planilha!")
+        }
+      } catch (err) {
+        console.error("Erro ao comunicar com API (Monitor):", err)
+        alert("Erro ao comunicar com a API para o monitor.")
+      }
+    } else {
+      console.log("Nenhum monitor detectado para atualização.")
+    }
+
+    // Atualiza o notebook normalmente
     try {
-      const response = await api.get(`/planilha/item/${serialNumber}`);
-
+      const response = await api.get(`/planilha/item/${serialNumber}`)
       if (response.data && response.data.exists) {
-        await api.put(`/planilha/item/${serialNumber}`, itemSaida);
-        alert("Item atualizado como 'Em Uso' na planilha.");
+        await api.put(`/planilha/item/${serialNumber}`, itemSaidaNotebook)
+        alert("Ativo atualizado como 'Em Uso' na planilha.")
       } else {
-        alert("Item não encontrado na planilha!");
+        alert("Ativo não encontrado na planilha!")
       }
     } catch (err) {
-      console.error("Erro ao comunicar com API:", err);
-      alert("Erro ao comunicar com a API.");
+      console.error("Erro ao comunicar com API (Ativo):", err)
+      alert("Erro ao comunicar com a API para o ativo.")
     }
-  };
-
+  }
 
   const captureHeadset = (text, peripheralsList) => {
     // Ajusta a regex para pegar o Headset seguido do status Sim/Não
