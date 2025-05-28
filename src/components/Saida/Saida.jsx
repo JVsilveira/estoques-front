@@ -4,8 +4,7 @@ import "./Saida.css"
 import { TransferEntrada } from "../Transfer/TransferEntrada";
 import { TransferSaida } from "../Transfer/TransferSaida";
 import { useItensDisponiveis } from "../hooks/useItensDisponiveis";
-import { verificarItemNaPlanilha } from "../hooks/verificarItemPlanilha";
-import { marcarItemComoEmUso } from "../hooks/marcarItemEmUso"
+import api from "../../api/api";
 
 // Configure o caminho do worker global
 GlobalWorkerOptions.workerSrc =
@@ -24,29 +23,35 @@ function Saída() {
   const [serialMonitor, setSerialMonitor] = useState("")
   const { setData } = useContext(TransferEntrada);
   const { itemSaiu, marcarComoSaiu } = useContext(TransferSaida);
-  const itensDisponiveis = useItensDisponiveis();
 
-const enviarParaPlanilha = () => {
-  const itemSaida = {
-    serialNumber: serialNumber,
-    modelo: notebookModel,
-    marca: notebookBrand,
-    modeloMonitor: modelMonitor,
-    serialMonitor: serialMonitor,
-    accessories: accessories,
-    disponibilidade: "Em Uso"
+
+ const enviarParaPlanilha = async () => {
+    const itemSaida = {
+      serialNumber,
+      modelo: notebookModel,
+      marca: notebookBrand,
+      modeloMonitor: modelMonitor,
+      serialMonitor: serialMonitor,
+      accessories,
+      disponibilidade: "Em Uso",
+      assetNumber,
+      nfNumber
+    };
+
+    try {
+      const response = await api.get(`/planilha/item/${serialNumber}`);
+
+      if (response.data && response.data.exists) {
+        await api.put(`/planilha/item/${serialNumber}`, itemSaida);
+        alert("Item atualizado como 'Em Uso' na planilha.");
+      } else {
+        alert("Item não encontrado na planilha!");
+      }
+    } catch (err) {
+      console.error("Erro ao comunicar com API:", err);
+      alert("Erro ao comunicar com a API.");
+    }
   };
-
-  const existe = verificarItemNaPlanilha(itemSaida, itensDisponiveis);
-
-  if (existe) {
-    marcarItemComoEmUso(itemSaida, itensDisponiveis, setData);
-    marcarComoSaiu(itemSaida);  
-    alert("Item atualizado como 'Em Uso' na planilha.");
-  } else {
-    alert("Item não encontrado na planilha!");
-  }
-};
 
 
   const captureHeadset = (text, peripheralsList) => {

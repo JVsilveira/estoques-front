@@ -288,8 +288,8 @@ function Entrada() {
       alert("Dados enviados ao servidor com sucesso!")
       console.log("Resposta do backend:", response.data)
     } catch (error) {
-      console.error("Erro ao enviar para o servidor:", error)
-      setError("Erro ao enviar dados para o servidor.")
+      alert("Erro ao enviar dados para o servidor.")
+      
     }
   }
 
