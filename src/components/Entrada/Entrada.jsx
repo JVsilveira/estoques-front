@@ -342,7 +342,7 @@ function Entrada() {
             </ul>
           </div>
         </div>
-        <button onClick={handleEnviarParaServidor}>Enviar para Planilha</button>
+        <button className="btn-download" onClick={handleEnviarParaServidor}>Enviar para Planilha</button>
       </div>
     </div>
   )

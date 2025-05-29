@@ -129,12 +129,13 @@ function Cadastro() {
 
   return (
     <div className="cadastro">
-      <div className="inserir">
+      <div className="inserirCadastro">
         <div className="titulo">CADASTRO DE ATIVOS</div>
-        <form onSubmit={handleSubmitAtivo}>
+        <div className="formulario">
+          <form onSubmit={handleSubmitAtivo}>
           <div className="triagem">
             <div>
-              <label>Quantidade de Ativos:</label>
+              <label>Quantidade:</label><br />
               <input
                 type="number"
                 value={quantidadeAtivo}
@@ -146,7 +147,7 @@ function Cadastro() {
             </div>
 
             <div>
-              <label>Modelo:</label>
+              <label>Modelo:</label><br />
               <input
                 type="text"
                 value={modeloAtivo}
@@ -156,7 +157,7 @@ function Cadastro() {
             </div>
 
             <div>
-              <label>Marca:</label>
+              <label>Marca:</label><br />
               <input
                 type="text"
                 value={marcaAtivo}
@@ -166,7 +167,7 @@ function Cadastro() {
             </div>
 
             <div>
-              <label>SKU:</label>
+              <label>SKU:</label><br />
               <input
                 type="text"
                 value={skuAtivo}
@@ -176,7 +177,7 @@ function Cadastro() {
             </div>
 
             <div>
-              <label>Nota Fiscal:</label>
+              <label>Nota Fiscal:</label><br />
               <input
                 type="text"
                 value={notaFiscalAtivo}
@@ -185,8 +186,9 @@ function Cadastro() {
               />
             </div>
           </div>
+          
 
-          <div className="planilha-container">
+          <div className="planilha-container-cadastro">
             <table className="planilha-tabela">
               <thead>
                 <tr>
@@ -221,17 +223,22 @@ function Cadastro() {
           </div>
 
           <div className="botao">
-            <button type="submit" disabled={loadingAtivo}>
+            <button className="btn-download" type="submit" disabled={loadingAtivo}>
               {loadingAtivo ? "Cadastrando..." : "Cadastrar"}
             </button>
           </div>
         </form>
+         </div>
+        <div /><div /><div /><div />  <div />
+      </div>
 
+        <div className="inserirCadastro">
         <div className="titulo">CADASTRO DE PERIFÉRICOS</div>
+        <div className="formulario">
         <form onSubmit={handleSubmitPeriferico}>
           <div className="triagem">
             <div>
-              <label>Quantidade:</label>
+              <label>Quantidade:</label><br />
               <input
                 type="number"
                 value={quantidadePeriferico}
@@ -242,7 +249,7 @@ function Cadastro() {
               />
             </div>
             <div>
-              <label>Modelo:</label>
+              <label>Modelo:</label><br />
               <input
                 type="text"
                 value={modeloPeriferico}
@@ -251,7 +258,7 @@ function Cadastro() {
               />
             </div>
             <div>
-              <label>Marca:</label>
+              <label>Marca:</label><br />
               <input
                 type="text"
                 value={marcaPeriferico}
@@ -260,7 +267,7 @@ function Cadastro() {
               />
             </div>
             <div>
-              <label>SKU:</label>
+              <label>SKU:</label><br />
               <input
                 type="text"
                 value={skuPeriferico}
@@ -269,7 +276,7 @@ function Cadastro() {
               />
             </div>
             <div>
-              <label>Nota Fiscal:</label>
+              <label>Nota Fiscal:</label><br />
               <input
                 type="text"
                 value={notaFiscalPeriferico}
@@ -279,7 +286,7 @@ function Cadastro() {
             </div>
           </div>
 
-          <div className="planilha-container">
+          <div className="planilha-container-cadastro">
             <table className="planilha-tabela">
               <thead>
                 <tr>
@@ -316,12 +323,14 @@ function Cadastro() {
             </table>
           </div>
 
-          <div className="botao">
-            <button type="submit" disabled={loadingPeriferico}>
+          <div className="botao" >
+            <button type="submit" disabled={loadingPeriferico} className="btn-download">
               {loadingPeriferico ? "Cadastrando..." : "Cadastrar Periféricos"}
             </button>
           </div>
         </form>
+        </div>
+        <div /><div /><div /><div /><div />
       </div>
     </div>
   )

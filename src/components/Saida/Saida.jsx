@@ -346,7 +346,7 @@ function Saída() {
             </ul>
           </div>
         </div>
-        <button onClick={enviarParaPlanilha}>Enviar para Planilha</button>
+        <button className="btn-download" onClick={enviarParaPlanilha}>Enviar para Planilha</button>
       </div>
     </div>
   )
