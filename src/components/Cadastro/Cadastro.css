@@ -1,109 +1,172 @@
 .cadastro {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    width: 100vw;
-    background-color: #3863ae;
-    overflow: hidden;
-    }
-  
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
+  background-color: #3863ae;
+  overflow: hidden;
+}
+
+.inserirCadastro {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  width: 45%;
+  height: 60%; /* Diminui para não ocupar 100% da tela */
+  background-color: antiquewhite;
+  border-radius: 15px;
+  margin: 10px;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  width: 90%;
+  height: 20%;
+  border-radius: 15px;
+  color: black;
+}
+
+.ativos-cadastro {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  color: black;
+  height: 80%;
+  width: 100%;
+  overflow-y: auto;
+}
+
+.triagem {
+  margin-left: 3vh;
+  margin-right: 3vh;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+}
+.triagem input {
+  width: 40%;
+}
+
+.planilha-container-cadastro {
+  margin-top: 10px;
+  margin-bottom: 2vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-height: 300px;
+  height: auto;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.planilha-tabela {
+  width: 80%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.planilha-tabela th,
+.planilha-tabela td {
+  border: 1px solid black;
+  padding: 10px;
+  text-align: center;
+}
+
+.planilha-tabela th {
+  background-color: crimson;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.planilha-tabela td {
+  background-color: white;
+  color: black;
+}
+
+.planilha-tabela td:nth-child(5),
+.planilha-tabela th:nth-child(5) {
+  width: 200px;
+}
+.botao {
+  display: flex;
+  width: 100%;
+
+  height: 10%;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-height: 1366px) {
   .inserirCadastro {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
     width: 45%;
-    height: 60%; /* Diminui para não ocupar 100% da tela */
-    background-color: antiquewhite;
-    border-radius: 15px;
-    margin: 10px;
+    height: 80%;
   }
 
-  .formulario{
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: flex-start;
+  .formulario {
     width: 90%;
-    height: 20%;
-    border-radius: 15px;
-    color: black;
-    
   }
-  
-  .ativos-cadastro {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    color: black;
-    height: 80%;
-    width: 100%;
-    overflow-y: auto;
-  }
-  
-  .triagem {
-    margin-left: 3vh;
-    margin-right: 3vh;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-    width: 100%;
-  }
+
   .triagem input {
-    width: 40%;
-  
-  }
-  
-  .planilha-container-cadastro {
-    margin-top: 10px;
-    margin-bottom: 2vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    max-height: 300px;
-    height: auto;
-    overflow-y: auto;
-    flex: 1;
-  }
-  
-  .planilha-tabela {
     width: 80%;
+  }
+
+  .planilha-container-cadastro {
+    max-height: 250px;
+    /* Sem overflow aqui */
+    overflow: visible;
+  }
+
+  .planilha-tabela {
+    width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
   }
-  
-  .planilha-tabela th,
-  .planilha-tabela td {
-    border: 1px solid black;
-    padding: 10px;
-    text-align: center;
-  }
-  
-  .planilha-tabela th {
-    background-color: crimson;
+
+  .planilha-tabela thead th {
     position: sticky;
     top: 0;
-    z-index: 1;
-  }
-  
-  .planilha-tabela td {
-    background-color: white;
-    color: black;
+    background-color: crimson;
+    color: white;
+    z-index: 2;
+    padding: 10px;
+    font-size: 12px;
+    height: 45px;
+    border: 1px solid black;
   }
 
-  .planilha-tabela td:nth-child(5), .planilha-tabela th:nth-child(5) {
-     width: 200px; 
-}
-.botao{
-    display: flex;
+  .planilha-tabela tbody {
+    display: block;
+    max-height: 255px; /* 300 - 45 do cabeçalho */
+    overflow-y: auto;
+    border: 1px solid black; /* opcional, só pra visualizar */
+  }
+
+  .planilha-tabela tbody tr {
+    display: table;
     width: 100%;
-    
-    height: 10%;
-    align-items: center;
-    justify-content: center;
+    table-layout: fixed;
+    border-bottom: 1px solid black;
+  }
+
+  .planilha-tabela tbody td {
+    padding: 6px 10px;
+    font-size: 12px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border: 1px solid black;
+    box-sizing: border-box;
+  }
 }

@@ -133,204 +133,237 @@ function Cadastro() {
         <div className="titulo">CADASTRO DE ATIVOS</div>
         <div className="formulario">
           <form onSubmit={handleSubmitAtivo}>
-          <div className="triagem">
-            <div>
-              <label>Quantidade:</label><br />
-              <input
-                type="number"
-                value={quantidadeAtivo}
-                onChange={handleQuantidadeAtivoChange}
-                onBlur={handleQuantidadeAtivoBlur}
-                min="1"
-                required
-              />
-            </div>
+            <div className="triagem">
+              <div>
+                <label>Quantidade:</label>
+                <br />
+                <input
+                  type="number"
+                  value={quantidadeAtivo}
+                  onChange={handleQuantidadeAtivoChange}
+                  onBlur={handleQuantidadeAtivoBlur}
+                  min="1"
+                  required
+                />
+              </div>
 
-            <div>
-              <label>Modelo:</label><br />
-              <input
-                type="text"
-                value={modeloAtivo}
-                onChange={e => setModeloAtivo(e.target.value)}
-                required
-              />
-            </div>
+              <div>
+                <label>Modelo:</label>
+                <br />
+                <input
+                  type="text"
+                  value={modeloAtivo}
+                  onChange={e => setModeloAtivo(e.target.value)}
+                  required
+                />
+              </div>
 
-            <div>
-              <label>Marca:</label><br />
-              <input
-                type="text"
-                value={marcaAtivo}
-                onChange={e => setMarcaAtivo(e.target.value)}
-                required
-              />
-            </div>
+              <div>
+                <label>Marca:</label>
+                <br />
+                <input
+                  type="text"
+                  value={marcaAtivo}
+                  onChange={e => setMarcaAtivo(e.target.value)}
+                  required
+                />
+              </div>
 
-            <div>
-              <label>SKU:</label><br />
-              <input
-                type="text"
-                value={skuAtivo}
-                onChange={e => setSkuAtivo(e.target.value)}
-                required
-              />
-            </div>
+              <div>
+                <label>SKU:</label>
+                <br />
+                <input
+                  type="text"
+                  value={skuAtivo}
+                  onChange={e => setSkuAtivo(e.target.value)}
+                  required
+                />
+              </div>
 
-            <div>
-              <label>Nota Fiscal:</label><br />
-              <input
-                type="text"
-                value={notaFiscalAtivo}
-                onChange={e => setNotaFiscalAtivo(e.target.value)}
-                required
-              />
+              <div>
+                <label>Nota Fiscal:</label>
+                <br />
+                <input
+                  type="text"
+                  value={notaFiscalAtivo}
+                  onChange={e => setNotaFiscalAtivo(e.target.value)}
+                  required
+                />
+              </div>
             </div>
-          </div>
-          
-
-          <div className="planilha-container-cadastro">
-            <table className="planilha-tabela">
-              <thead>
-                <tr>
-                  <th>Modelo</th>
-                  <th>Marca</th>
-                  <th>SKU</th>
-                  <th>Nota Fiscal</th>
-                  <th>Número de Série</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ativosList.map((ativo, index) => (
-                  <tr key={index}>
-                    <td>{modeloAtivo}</td>
-                    <td>{marcaAtivo}</td>
-                    <td>{skuAtivo}</td>
-                    <td>{notaFiscalAtivo}</td>
-                    <td>
-                      <input
-                        type="text"
-                        value={ativo.serialNumber}
-                        onChange={e =>
-                          handleSerialNumberAtivoChange(index, e.target.value)
-                        }
-                        required
-                      />
-                    </td>
+            <br />
+            <div class="planilha-fixa-cabecalho">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Modelo</th>
+                    <th>Marca</th>
+                    <th>SKU</th>
+                    <th>Nota Fiscal</th>
+                    <th>Número de Série</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+              </table>
+            </div>
+            <div className="planilha-container-cadastro">
+              <table className="planilha-tabela">
+                <tbody>
+                  {ativosList.map((ativo, index) => (
+                    <tr key={index}>
+                      <td>{modeloAtivo}</td>
+                      <td>{marcaAtivo}</td>
+                      <td>{skuAtivo}</td>
+                      <td>{notaFiscalAtivo}</td>
+                      <td>
+                        <input
+                          type="text"
+                          value={ativo.serialNumber}
+                          onChange={e =>
+                            handleSerialNumberAtivoChange(index, e.target.value)
+                          }
+                          required
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-          <div className="botao">
-            <button className="btn-download" type="submit" disabled={loadingAtivo}>
-              {loadingAtivo ? "Cadastrando..." : "Cadastrar"}
-            </button>
-          </div>
-        </form>
-         </div>
-        <div /><div /><div /><div />  <div />
+            <div className="botao">
+              <button
+                className="btn-download"
+                type="submit"
+                disabled={loadingAtivo}
+              >
+                {loadingAtivo ? "Cadastrando..." : "Cadastrar"}
+              </button>
+            </div>
+          </form>
+        </div>
+        <div />
+        <div />
+        <div />
+        <div /> <div />
       </div>
 
-        <div className="inserirCadastro">
+      <div className="inserirCadastro">
         <div className="titulo">CADASTRO DE PERIFÉRICOS</div>
         <div className="formulario">
-        <form onSubmit={handleSubmitPeriferico}>
-          <div className="triagem">
-            <div>
-              <label>Quantidade:</label><br />
-              <input
-                type="number"
-                value={quantidadePeriferico}
-                onChange={handleQuantidadePerifericoChange}
-                onBlur={handleQuantidadePerifericoBlur}
-                min="1"
-                required
-              />
+          <form onSubmit={handleSubmitPeriferico}>
+            <div className="triagem">
+              <div>
+                <label>Quantidade:</label>
+                <br />
+                <input
+                  type="number"
+                  value={quantidadePeriferico}
+                  onChange={handleQuantidadePerifericoChange}
+                  onBlur={handleQuantidadePerifericoBlur}
+                  min="1"
+                  required
+                />
+              </div>
+              <div>
+                <label>Modelo:</label>
+                <br />
+                <input
+                  type="text"
+                  value={modeloPeriferico}
+                  onChange={e => setModeloPeriferico(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label>Marca:</label>
+                <br />
+                <input
+                  type="text"
+                  value={marcaPeriferico}
+                  onChange={e => setMarcaPeriferico(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label>SKU:</label>
+                <br />
+                <input
+                  type="text"
+                  value={skuPeriferico}
+                  onChange={e => setSkuPeriferico(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label>Nota Fiscal:</label>
+                <br />
+                <input
+                  type="text"
+                  value={notaFiscalPeriferico}
+                  onChange={e => setNotaFiscalPeriferico(e.target.value)}
+                  required
+                />
+              </div>
             </div>
-            <div>
-              <label>Modelo:</label><br />
-              <input
-                type="text"
-                value={modeloPeriferico}
-                onChange={e => setModeloPeriferico(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label>Marca:</label><br />
-              <input
-                type="text"
-                value={marcaPeriferico}
-                onChange={e => setMarcaPeriferico(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label>SKU:</label><br />
-              <input
-                type="text"
-                value={skuPeriferico}
-                onChange={e => setSkuPeriferico(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label>Nota Fiscal:</label><br />
-              <input
-                type="text"
-                value={notaFiscalPeriferico}
-                onChange={e => setNotaFiscalPeriferico(e.target.value)}
-                required
-              />
-            </div>
-          </div>
+            <br />
 
-          <div className="planilha-container-cadastro">
-            <table className="planilha-tabela">
-              <thead>
-                <tr>
-                  <th>Modelo</th>
-                  <th>Marca</th>
-                  <th>SKU</th>
-                  <th>Nota Fiscal</th>
-                  <th>Número de Série</th>
-                </tr>
-              </thead>
-              <tbody>
-                {perifericosList.map((p, index) => (
-                  <tr key={index}>
-                    <td>{modeloPeriferico}</td>
-                    <td>{marcaPeriferico}</td>
-                    <td>{skuPeriferico}</td>
-                    <td>{notaFiscalPeriferico}</td>
-                    <td>
-                      <input
-                        type="text"
-                        value={p.serialNumber}
-                        onChange={e =>
-                          handleSerialNumberPerifericoChange(
-                            index,
-                            e.target.value
-                          )
-                        }
-                        required
-                      />
-                    </td>
+            <div class="planilha-fixa-cabecalho">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Modelo</th>
+                    <th>Marca</th>
+                    <th>SKU</th>
+                    <th>Nota Fiscal</th>
+                    <th>Número de Série</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+              </table>
+            </div>
+            <div className="planilha-container-cadastro">
+              <table className="planilha-tabela">
+                <tbody>
+                  {perifericosList.map((p, index) => (
+                    <tr key={index}>
+                      <td>{modeloPeriferico}</td>
+                      <td>{marcaPeriferico}</td>
+                      <td>{skuPeriferico}</td>
+                      <td>{notaFiscalPeriferico}</td>
+                      <td>
+                        <input
+                          type="text"
+                          value={p.serialNumber}
+                          onChange={e =>
+                            handleSerialNumberPerifericoChange(
+                              index,
+                              e.target.value
+                            )
+                          }
+                          required
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-          <div className="botao" >
-            <button type="submit" disabled={loadingPeriferico} className="btn-download">
-              {loadingPeriferico ? "Cadastrando..." : "Cadastrar Periféricos"}
-            </button>
-          </div>
-        </form>
+            <div className="botao">
+              <button
+                type="submit"
+                disabled={loadingPeriferico}
+                className="btn-download"
+              >
+                {loadingPeriferico ? "Cadastrando..." : "Cadastrar Periféricos"}
+              </button>
+            </div>
+          </form>
         </div>
-        <div /><div /><div /><div /><div />
+        <div />
+        <div />
+        <div />
+        <div />
+        <div />
       </div>
     </div>
   )
