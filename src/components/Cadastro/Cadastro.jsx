@@ -10,6 +10,7 @@ function Cadastro() {
   const [quantidadeAtivo, setQuantidadeAtivo] = useState(1)
   const [ativosList, setAtivosList] = useState([])
   const [loadingAtivo, setLoadingAtivo] = useState(false)
+  const [tipoAtivo, setTipoAtivo] = useState("")
 
   const [modeloPeriferico, setModeloPeriferico] = useState("")
   const [marcaPeriferico, setMarcaPeriferico] = useState("")
@@ -18,6 +19,7 @@ function Cadastro() {
   const [quantidadePeriferico, setQuantidadePeriferico] = useState(1)
   const [perifericosList, setPerifericosList] = useState([])
   const [loadingPeriferico, setLoadingPeriferico] = useState(false)
+  const [tipoPeriferico, setTipoPeriferico] = useState("")
 
   // Funções para ATIVOS
   const handleQuantidadeAtivoChange = e =>
@@ -44,6 +46,7 @@ function Cadastro() {
     }
 
     const dadosProduto = ativosList.map(ativo => ({
+      ativo: tipoAtivo,
       modelo: modeloAtivo,
       marca: marcaAtivo,
       sku: skuAtivo,
@@ -58,6 +61,7 @@ function Cadastro() {
         await api.post("/planilha/ativos", ativo)
       }
       alert("Ativos cadastrados com sucesso!")
+      setTipoAtivo("")
       setModeloAtivo("")
       setMarcaAtivo("")
       setSkuAtivo("")
@@ -99,6 +103,7 @@ function Cadastro() {
     }
 
     const dadosPeriferico = perifericosList.map(p => ({
+      tipo: tipoPeriferico,
       modelo: modeloPeriferico,
       marca: marcaPeriferico,
       sku: skuPeriferico,
@@ -113,6 +118,7 @@ function Cadastro() {
         await api.post("/planilha/perifericos", periferico)
       }
       alert("Periféricos cadastrados com sucesso!")
+      setTipoPeriferico("")
       setModeloPeriferico("")
       setMarcaPeriferico("")
       setSkuPeriferico("")
@@ -193,19 +199,21 @@ function Cadastro() {
             </div>
             <br />
             <div className="planilha-container-cadastro">
-       <table className="planilha-tabela">
-          <thead>
-            <tr>
-              <th>Modelo</th>
-              <th>Marca</th>
-              <th>SKU</th>
-              <th>Nota Fiscal</th>
-              <th>Número de Série</th>
-            </tr>
-          </thead>
-         <tbody>
+              <table className="planilha-tabela">
+                <thead>
+                  <tr>
+                    <th>Tipo</th>
+                    <th>Modelo</th>
+                    <th>Marca</th>
+                    <th>SKU</th>
+                    <th>Nota Fiscal</th>
+                    <th>Número de Série</th>
+                  </tr>
+                </thead>
+                <tbody>
                   {ativosList.map((ativo, index) => (
                     <tr key={index}>
+                      <td>{tipoAtivo}</td>
                       <td>{modeloAtivo}</td>
                       <td>{marcaAtivo}</td>
                       <td>{skuAtivo}</td>
@@ -303,40 +311,44 @@ function Cadastro() {
             </div>
             <br />
 
-          
             <div className="planilha-container-cadastro">
-       <table className="planilha-tabela">
-          <thead>
-            <tr>
-              <th>Modelo</th>
-              <th>Marca</th>
-              <th>SKU</th>
-              <th>Nota Fiscal</th>
-              <th>Número de Série</th>
-            </tr>
-          </thead>
-         <tbody>
-      {perifericosList.map((p, index) => (
-        <tr key={index}>
-          <td>{modeloPeriferico}</td>
-          <td>{marcaPeriferico}</td>
-          <td>{skuPeriferico}</td>
-          <td>{notaFiscalPeriferico}</td>
-          <td>
-            <input
-              type="text"
-              value={p.serialNumber}
-              onChange={e =>
-                handleSerialNumberPerifericoChange(index, e.target.value)
-              }
-              required
-            />
-          </td>
-        </tr>
-      ))}
-    </tbody>
-    </table>
-</div>
+              <table className="planilha-tabela">
+                <thead>
+                  <tr>
+                    <th>Tipo</th>
+                    <th>Modelo</th>
+                    <th>Marca</th>
+                    <th>SKU</th>
+                    <th>Nota Fiscal</th>
+                    <th>Número de Série</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {perifericosList.map((p, index) => (
+                    <tr key={index}>
+                      <td>{tipoPeriferico}</td>
+                      <td>{modeloPeriferico}</td>
+                      <td>{marcaPeriferico}</td>
+                      <td>{skuPeriferico}</td>
+                      <td>{notaFiscalPeriferico}</td>
+                      <td>
+                        <input
+                          type="text"
+                          value={p.serialNumber}
+                          onChange={e =>
+                            handleSerialNumberPerifericoChange(
+                              index,
+                              e.target.value
+                            )
+                          }
+                          required
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
             <div className="botao">
               <button

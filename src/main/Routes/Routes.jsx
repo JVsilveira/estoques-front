@@ -1,7 +1,7 @@
 import React from "react"
 import { Routes, Route } from "react-router-dom"
 import Login from "../../components/Login/Login"
-import Home from "../../components/Home/Home"
+import Estoque from "../../components/Estoque/Estoque"
 import Screen from "../../components/Templates/Screen/Screen"
 import Entrada from "../../components/Entrada/Entrada"
 import Saida from "../../components/Saida/Saida"
@@ -30,7 +30,7 @@ export default function AppRoutes() {
         path="/Home"
         element={
           <Screen>
-            <Home />
+            <Estoque />
           </Screen>
         }
       />
