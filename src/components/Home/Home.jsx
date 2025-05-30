@@ -6,8 +6,8 @@ function Home() {
       <div className="quantidades">
         <div className="titulo">ESTOQUE ARKLOK TIM</div>
         <div className="ativos">
-          <div className="tabelas-container">
-            <table className="tabela">
+          <div className="tabelas-container-estoque">
+            <table className="tabela-estoque">
               <thead>
                 <tr>
                   <th>Item</th>
@@ -59,7 +59,7 @@ function Home() {
                 </tr>
               </tbody>
             </table>
-            <table className="tabela">
+            <table className="tabela-estoque">
               <thead>
                 <tr>
                   <th>Item</th>
@@ -111,7 +111,7 @@ function Home() {
                 </tr>
               </tbody>
             </table>
-            <table className="tabela">
+            <table className="tabela-estoque">
               <thead>
                 <tr>
                   <th>Item</th>

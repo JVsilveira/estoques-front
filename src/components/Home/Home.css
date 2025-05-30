@@ -40,30 +40,37 @@
     border-radius: 0 0 15px 15px;
 }
 
-.tabelas-container {
-     margin-top: 5vh;
-    margin-bottom: 5vh;
+.tabelas-container-estoque {
+    padding: 5vw;
     display: flex;
     align-items: center;
     justify-content: space-around;
-    width: 100%;
+    width: 80%;
     height: 100%; 
     overflow-y: auto; 
 }
 
-.tabela {
+.tabela-estoque {
     border-collapse: collapse;
     }
 
-.tabela th, .tabela td {
+.tabela-estoque th, .tabela-estoque td >input{
+    width: 30px;
+    text-align: center;
+}
+
+.tabela-estoque th, .tabela-estoque td {
     border: 1px solid black;
-    padding: 8px;
+    padding: 10px;
     text-align: center;
     color: black;
     background-color: white;
-}
+    width: 50px;
+    height: 20px;
+    font-size: 12px;}
+    
 
-.tabela th {
+.tabela-estoque th {
     background-color: crimson;
     color: white;
 }
