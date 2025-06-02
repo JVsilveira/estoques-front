@@ -17,7 +17,7 @@ function Estoque() {
     "Headset premium": 0,
     Webcam: 0,
     "Mouse sem fio": 0,
-    "LENOVO Teclado sem fio": 0,
+    "Teclado sem fio": 0,
     "LENOVO T14 G2": 0,
     "LENOVO T14 G4": 0,
     "LENOVO NEO 50Q": 0,

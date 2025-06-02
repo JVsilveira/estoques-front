@@ -1,14 +1,9 @@
 import React, { useState, useContext } from "react"
-import { getDocument, GlobalWorkerOptions } from "pdfjs-dist"
 import "./Saida.css"
 import { TransferEntrada } from "../Transfer/TransferEntrada"
 import { TransferSaida } from "../Transfer/TransferSaida"
-import { useItensDisponiveis } from "../hooks/useItensDisponiveis"
 import api from "../../api/api"
-
-// Configure o caminho do worker global
-GlobalWorkerOptions.workerSrc =
-  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js"
+import { extractPdfText } from "../Utility/pdfUtils"
 
 function Saída() {
   const [error, setError] = useState("")
@@ -197,113 +192,95 @@ function Saída() {
       setSerialMonitor("")
       setLoading(true)
 
-      const fileReader = new FileReader()
-      fileReader.onload = async function () {
-        try {
-          const typedArray = new Uint8Array(this.result)
-          const pdf = await getDocument(typedArray).promise
-          let text = ""
-          for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i)
-            const textContent = await page.getTextContent()
-            text += textContent.items.map(item => item.str).join(" ")
-          }
+      try {
+        const text = await extractPdfText(file)
+        console.log("Texto extraído do PDF:", text)
 
-          text = text.replace(/\s+/g, " ").trim()
-          text = text.replace(/\n/g, " ")
+        // Extração do Modelo e Marca do Notebook
+        const notebookModelMatch = text.match(/modelo[^\w]+(\S[\w\s-]+)/i)
+        const notebookBrandMatch = text.match(/marca[^\w]+(\S[\w\s-]+)/i)
+        const nfNumberMatch = text.match(/NF\s*nº?\s*(\d+)/i)
 
-          console.log("Texto extraído do PDF:", text)
-          setError("")
-
-          // Extração do Modelo e Marca do Notebook
-          const notebookModelMatch = text.match(/modelo[^\w]+(\S[\w\s-]+)/i)
-          const notebookBrandMatch = text.match(/marca[^\w]+(\S[\w\s-]+)/i)
-          const nfNumberMatch = text.match(/NF\s*nº?\s*(\d+)/i)
-
-          if (nfNumberMatch) {
-            setNfNumber(nfNumberMatch[1])
-          }
-
-          if (notebookModelMatch) {
-            setNotebookModel(notebookModelMatch[1])
-          }
-
-          if (notebookBrandMatch) {
-            setNotebookBrand(notebookBrandMatch[1])
-          }
-
-          // Captura do Número do Ativo
-          const assetNumberMatch = text.match(/NÚMERO DO ATIVO\s*(\d+)/i)
-          if (assetNumberMatch) {
-            setAssetNumber(assetNumberMatch[1].trim()) // Remover espaços extras
-          }
-
-          // Captura do Número de Série (Serial Number) e remover espaços
-          const serialNumberMatch = text.match(
-            /nº de série\s*[:\-\s]*([A-Za-z0-9\-]+\s*[A-Za-z0-9\-]*)+/i
-          )
-          if (serialNumberMatch) {
-            // Remover os espaços do número de série
-            const serialNumber = serialNumberMatch[1].replace(/\s+/g, "")
-            setSerialNumber(serialNumber) // Exibir sem espaços
-          }
-
-          // Extração de Acessórios
-          const peripheralsSectionMatch = text.match(
-            /ACESSÓRIOS[\s\S]+?Docusign Envelope ID:/i
-          )
-          console.log("Seção de acessórios:", peripheralsSectionMatch)
-
-          if (peripheralsSectionMatch) {
-            const peripheralsText = peripheralsSectionMatch[0]
-            const peripheralsList = []
-
-            // Chama as funções para capturar os acessórios com informações adicionais
-            captureHeadset(peripheralsText, peripheralsList)
-            captureDockStation(peripheralsText, peripheralsList)
-            captureCaboSeguranca(peripheralsText, peripheralsList)
-            monitorMatch(peripheralsText, peripheralsList)
-
-            // Lista dos outros acessórios
-            const accessoryList = [
-              "Mouse",
-              "Teclado",
-              "Cabo RCA",
-              "Cabo paralelo para unidade externa",
-              "Maleta/Mochila para Notebook",
-              "Suporte Ergonômico",
-              "Bateria Extra",
-              "Carregador Extra",
-              "Adaptador HDMI",
-              "Lacre de Segurança",
-              "Kit boas - vindas",
-              "Webcam",
-              "Hub USB",
-              "Cabo de força do monitor",
-            ].map(item => item.trim())
-
-            // Captura os outros acessórios
-            accessoryList.forEach(item => {
-              captureAccessory(item, peripheralsText, peripheralsList)
-            })
-
-            // Filtra os acessórios com status "Sim"
-            const filteredPeripherals = peripheralsList.filter(
-              peripheral => peripheral.status === "Sim"
-            )
-            console.log("Acessórios filtrados:", filteredPeripherals)
-            setAccessories(
-              filteredPeripherals.map(peripheral => peripheral.name)
-            )
-          }
-        } catch (err) {
-          setError("Falha ao ler PDF.")
-          console.error("Error reading PDF:", err)
-        } finally {
-          setLoading(false)
+        if (nfNumberMatch) {
+          setNfNumber(nfNumberMatch[1])
         }
+
+        if (notebookModelMatch) {
+          setNotebookModel(notebookModelMatch[1])
+        }
+
+        if (notebookBrandMatch) {
+          setNotebookBrand(notebookBrandMatch[1])
+        }
+
+        // Captura do Número do Ativo
+        const assetNumberMatch = text.match(/NÚMERO DO ATIVO\s*(\d+)/i)
+        if (assetNumberMatch) {
+          setAssetNumber(assetNumberMatch[1].trim()) // Remover espaços extras
+        }
+
+        // Captura do Número de Série (Serial Number) e remover espaços
+        const serialNumberMatch = text.match(
+          /nº de série\s*[:\-\s]*([A-Za-z0-9\-]+\s*[A-Za-z0-9\-]*)+/i
+        )
+        if (serialNumberMatch) {
+          // Remover os espaços do número de série
+          const serialNumber = serialNumberMatch[1].replace(/\s+/g, "")
+          setSerialNumber(serialNumber) // Exibir sem espaços
+        }
+
+        // Extração de Acessórios
+        const peripheralsSectionMatch = text.match(
+          /ACESSÓRIOS[\s\S]+?Docusign Envelope ID:/i
+        )
+        console.log("Seção de acessórios:", peripheralsSectionMatch)
+
+        if (peripheralsSectionMatch) {
+          const peripheralsText = peripheralsSectionMatch[0]
+          const peripheralsList = []
+
+          // Chama as funções para capturar os acessórios com informações adicionais
+          captureHeadset(peripheralsText, peripheralsList)
+          captureDockStation(peripheralsText, peripheralsList)
+          captureCaboSeguranca(peripheralsText, peripheralsList)
+          monitorMatch(peripheralsText, peripheralsList)
+
+          // Lista dos outros acessórios
+          const accessoryList = [
+            "Mouse",
+            "Teclado",
+            "Cabo RCA",
+            "Cabo paralelo para unidade externa",
+            "Maleta/Mochila para Notebook",
+            "Suporte Ergonômico",
+            "Bateria Extra",
+            "Carregador Extra",
+            "Adaptador HDMI",
+            "Lacre de Segurança",
+            "Kit boas - vindas",
+            "Webcam",
+            "Hub USB",
+            "Cabo de força do monitor",
+          ].map(item => item.trim())
+
+          // Captura os outros acessórios
+          accessoryList.forEach(item => {
+            captureAccessory(item, peripheralsText, peripheralsList)
+          })
+
+          // Filtra os acessórios com status "Sim"
+          const filteredPeripherals = peripheralsList.filter(
+            peripheral => peripheral.status === "Sim"
+          )
+          console.log("Acessórios filtrados:", filteredPeripherals)
+          setAccessories(filteredPeripherals.map(peripheral => peripheral.name))
+        }
+      } catch (err) {
+        setError("Falha ao ler PDF.")
+        console.error("Error reading PDF:", err)
+      } finally {
+        setLoading(false)
       }
-      fileReader.readAsArrayBuffer(file)
     }
   }
 
@@ -346,7 +323,9 @@ function Saída() {
             </ul>
           </div>
         </div>
-        <button className="btn-download" onClick={enviarParaPlanilha}>Enviar para Planilha</button>
+        <button className="btn-download" onClick={enviarParaPlanilha}>
+          Enviar para Planilha
+        </button>
       </div>
     </div>
   )
