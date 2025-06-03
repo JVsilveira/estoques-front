@@ -54,7 +54,6 @@ function Planilha() {
                 <th>Marca</th>
                 <th>Nota Fiscal</th>
                 <th>Disponibilidade</th>
-                <th>Status de Uso</th>
               </tr>
             </thead>
             <tbody>
@@ -67,14 +66,18 @@ function Planilha() {
                     <td>{item.modelo || "N/A"}</td>
                     <td>{item.marca || "N/A"}</td>
                     <td>{item.notaFiscal || "N/A"}</td>
-                    <td>{item.disponibilidade || "N/A"}</td>
                     <td
                       style={{
-                        color: emUso ? "red" : "green",
+                        color:
+                          item.disponibilidade === "Em estoque"
+                            ? "green"
+                            : "red",
                         fontWeight: "bold",
                       }}
                     >
-                      {emUso ? "EM USO" : "Disponível"}
+                      {item.disponibilidade === "Em estoque"
+                        ? "Em estoque"
+                        : "Em uso"}
                     </td>
                   </tr>
                 )

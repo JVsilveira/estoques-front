@@ -1,42 +1,42 @@
-import './Login.css';
-import Tim from "../../assets/imgs/TIM.jpg";
-import Arklok from "../../assets/imgs/ARKLOK.png";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from '../../api/authContext';
-import { useState } from 'react';
+import "./Login.css"
+import Tim from "../../assets/imgs/TIM.jpg"
+import Arklok from "../../assets/imgs/ARKLOK.png"
+import { useNavigate } from "react-router-dom"
+import { useAuth } from "../../api/authContext"
+import { useState } from "react"
 
 function Login() {
-  const navigate = useNavigate();
-  const { login } = useAuth();
+  const navigate = useNavigate()
+  const { login } = useAuth()
 
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [error, setError] = useState('');
+  const [matricula, setMatricula] = useState("")
+  const [senha, setSenha] = useState("")
+  const [error, setError] = useState("")
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async e => {
+    e.preventDefault()
     try {
-      await login(email, senha);
-      navigate('/Planilha');
+      await login(matricula, senha)
+      navigate("/Planilha")
     } catch (err) {
-      setError(err);
+      setError(err)
     }
-  };
+  }
 
   return (
     <div className="Login">
       <div className="areaLogin">
-        <div className='areaDados'>
+        <div className="areaDados">
           <h1>Login</h1>
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="email">E-mail:</label>
+              <label htmlFor="matricula">Matrícula:</label>
               <input
-                type="email"
+                type="matricula"
                 className="form-control"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="matricula"
+                value={matricula}
+                onChange={e => setMatricula(e.target.value)}
               />
             </div>
             <div className="form-group">
@@ -46,13 +46,17 @@ function Login() {
                 className="form-control"
                 id="senha"
                 value={senha}
-                onChange={(e) => setSenha(e.target.value)}
+                onChange={e => setSenha(e.target.value)}
               />
             </div>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            <div className='botaoLogar'>
-              <button type="submit" className="logar">Entrar</button>
-              <button type="button" className="esqueci">Esqueci a senha</button>
+            {error && <p style={{ color: "red" }}>{error}</p>}
+            <div className="botaoLogar">
+              <button type="submit" className="logar">
+                Entrar
+              </button>
+              <button type="button" className="esqueci">
+                Esqueci a senha
+              </button>
             </div>
           </form>
         </div>
@@ -62,7 +66,7 @@ function Login() {
         <img className="arklok" src={Arklok} alt="Arklok" />
       </div>
     </div>
-  );
+  )
 }
 
-export default Login;
+export default Login

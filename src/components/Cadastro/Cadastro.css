@@ -44,22 +44,30 @@
 }
 
 .triagem {
-  margin-left: 3vh;
-  margin-right: 3vh;
   display: flex;
   flex-direction: row;
   justify-content: space-around;
   align-items: center;
+  text-align: center;
   width: 100%;
 }
+
+.triagem select {
+  width: 90%;
+  margin: 10px;
+}
+
 .triagem input {
+  align-items: center;
+  text-align: center;
   width: 40%;
+  margin: 10px;
 }
 
 .planilha-container-cadastro {
   display: flex;
-  margin-left: 8%;
-  width: 120%;
+  margin-left: 5%;
+  width: 130%;
   max-height: 200px;
   overflow-y: auto;
   scrollbar-width: none; /* Firefox */

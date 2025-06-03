@@ -7,6 +7,7 @@ import { extractPdfText } from "../Utility/pdfUtils"
 
 function Entrada() {
   const [error, setError] = useState("")
+  const [notebookTipo, setNotebookTipo] = useState("")
   const [notebookModel, setNotebookModel] = useState("")
   const [notebookBrand, setNotebookBrand] = useState("")
   const [modelMonitor, setModelMonitor] = useState("")
@@ -20,6 +21,7 @@ function Entrada() {
     const file = event.target.files[0]
     if (file) {
       setError("")
+      setNotebookTipo("")
       setNotebookModel("")
       setNotebookBrand("")
       setSerialNumber("")
@@ -32,11 +34,16 @@ function Entrada() {
         const text = await extractPdfText(file)
         console.log("Texto extraído do PDF:", text)
 
+        const notebookTipoMatch = text.match(/tipo[^\w]+([A-Za-z0-9\s\-]+)/i)
         const notebookModelMatch = text.match(/modelo[^\w]+([A-Za-z0-9\s\-]+)/i)
         const notebookBrandMatch = text.match(/marca[^\w]+([A-Za-z0-9\s\-]+)/i)
         const serialNumberMatch = text.match(
           /nº de série\s*[:\-\s]*([A-Za-z0-9]+)/i
         )
+
+        if (notebookTipoMatch) {
+          setNotebookTipo(notebookTipoMatch[1])
+        }
 
         if (notebookModelMatch) {
           setNotebookModel(notebookModelMatch[1])
@@ -199,12 +206,32 @@ function Entrada() {
     const token = localStorage.getItem("token")
     const linhasParaPlanilha = []
 
+    const accessoriesCounted = accessories.map(item => ({
+      name: item,
+      quantidade: 1,
+    }))
+
+    // Adiciona notebook como item
+    accessoriesCounted.push({
+      name: notebookModel,
+      quantidade: 1,
+    })
+
+    // Se houver monitor, adiciona também
+    if (modelMonitor && serialMonitor) {
+      accessoriesCounted.push({
+        name: modelMonitor,
+        quantidade: 1,
+      })
+    }
+
     // Linha do Notebook
     linhasParaPlanilha.push({
-      tipo: "Notebook/Desktop",
+      tipo: notebookTipo || "N/A",
       serialNumber: serialNumber || "N/A",
       modelo: notebookModel || "N/A",
       marca: notebookBrand || "N/A",
+      accessoriesCounted,
       disponibilidade: "Em estoque",
     })
 
@@ -249,11 +276,11 @@ function Entrada() {
         <div className="ativos">
           <div className="notebook">
             <h3>Modelo do Ativo:</h3>
+            <p>Tipo: {notebookTipo}</p>
             <p>Marca: {notebookBrand}</p>
             <p>Modelo: {notebookModel}</p>
             <p>Serial: {serialNumber}</p>
           </div>
-
           <div className="monitor">
             <h3>Monitor:</h3>
             <p>Modelo: {modelMonitor}</p>

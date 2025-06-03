@@ -9,6 +9,7 @@ function Saída() {
   const [error, setError] = useState("")
   const [notebookModel, setNotebookModel] = useState("")
   const [notebookBrand, setNotebookBrand] = useState("")
+  const [notebookTipo, setNotebookTipo] = useState("")
   const [accessories, setAccessories] = useState([])
   const [loading, setLoading] = useState(false)
   const [serialNumber, setSerialNumber] = useState("")
@@ -20,11 +21,31 @@ function Saída() {
   const { itemSaiu, marcarComoSaiu } = useContext(TransferSaida)
 
   const enviarParaPlanilha = async () => {
+    const accessoriesCounted = accessories.map(item => ({
+      name: item,
+      quantidade: 1,
+    }))
+
+    // Adiciona notebook como item
+    accessoriesCounted.push({
+      name: notebookModel,
+      quantidade: 1,
+    })
+
+    // Se houver monitor, adiciona também
+    if (modelMonitor && serialMonitor) {
+      accessoriesCounted.push({
+        name: modelMonitor,
+        quantidade: 1,
+      })
+    }
+
     const itemSaidaNotebook = {
       serialNumber,
       modelo: notebookModel,
       marca: notebookBrand,
-      accessories,
+      tipo: notebookTipo,
+      accessoriesCounted,
       disponibilidade: "Em Uso",
       assetNumber,
       nfNumber,
@@ -58,6 +79,7 @@ function Saída() {
 
     // Atualiza o notebook normalmente
     try {
+      console.log("Enviando item de saída:", itemSaidaNotebook)
       const response = await api.get(`/planilha/item/${serialNumber}`)
       if (response.data && response.data.exists) {
         await api.put(`/planilha/item/${serialNumber}`, itemSaidaNotebook)
@@ -182,6 +204,7 @@ function Saída() {
     if (file) {
       // Limpar dados antes de processar o novo PDF
       setError("")
+      setNotebookTipo("")
       setNotebookModel("")
       setNotebookBrand("")
       setAccessories([]) // Limpar acessórios
@@ -197,9 +220,14 @@ function Saída() {
         console.log("Texto extraído do PDF:", text)
 
         // Extração do Modelo e Marca do Notebook
+        const notebookTipoMatch = text.match(/um[^\w]+(\S[\w\s-]+)/i)
         const notebookModelMatch = text.match(/modelo[^\w]+(\S[\w\s-]+)/i)
         const notebookBrandMatch = text.match(/marca[^\w]+(\S[\w\s-]+)/i)
         const nfNumberMatch = text.match(/NF\s*nº?\s*(\d+)/i)
+
+        if (notebookTipoMatch) {
+          setNotebookTipo(notebookTipoMatch[1])
+        }
 
         if (nfNumberMatch) {
           setNfNumber(nfNumberMatch[1])
@@ -300,6 +328,7 @@ function Saída() {
         <div className="ativos">
           <div className="notebook">
             <h3>Modelo do Ativo:</h3>
+            <p>Tipo: {notebookTipo}</p>
             <p>Marca: {notebookBrand}</p>
             <p>Modelo: {notebookModel}</p>
             <p>Serial: {serialNumber}</p>

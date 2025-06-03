@@ -46,18 +46,21 @@ function Cadastro() {
     }
 
     const dadosProduto = ativosList.map(ativo => ({
+      quantidade: quantidadeAtivo,
+      tipo: tipoAtivo,
       ativo: tipoAtivo,
       modelo: modeloAtivo,
       marca: marcaAtivo,
       sku: skuAtivo,
       notaFiscal: notaFiscalAtivo,
       serialNumber: ativo.serialNumber,
-      disponibilidade: "Disponível",
+      disponibilidade: "Em estoque",
     }))
 
     setLoadingAtivo(true)
     try {
       for (const ativo of dadosProduto) {
+        console.log("Cadastrando ativo:", ativo)
         await api.post("/planilha/ativos", ativo)
       }
       alert("Ativos cadastrados com sucesso!")
@@ -103,18 +106,20 @@ function Cadastro() {
     }
 
     const dadosPeriferico = perifericosList.map(p => ({
+      quantidade: quantidadePeriferico,
       tipo: tipoPeriferico,
       modelo: modeloPeriferico,
       marca: marcaPeriferico,
       sku: skuPeriferico,
       notaFiscal: notaFiscalPeriferico,
       serialNumber: p.serialNumber,
-      disponibilidade: "Disponível",
+      disponibilidade: "Em estoque",
     }))
 
     setLoadingPeriferico(true)
     try {
       for (const periferico of dadosPeriferico) {
+        console.log("Cadastrando periférico:", periferico)
         await api.post("/planilha/perifericos", periferico)
       }
       alert("Periféricos cadastrados com sucesso!")
@@ -152,7 +157,21 @@ function Cadastro() {
                   required
                 />
               </div>
-
+              <div>
+                <label>Tipo:</label>
+                <br />
+                <select
+                  value={tipoAtivo}
+                  onChange={e => setTipoAtivo(e.target.value)}
+                  required
+                >
+                  <option value="">Selecione o tipo</option>
+                  <option value="notebook">Notebook</option>
+                  <option value="desktop">Desktop</option>
+                  <option value="minidesktop">Minidesktop</option>
+                  <option value="monitor">Monitor</option>
+                </select>
+              </div>
               <div>
                 <label>Modelo:</label>
                 <br />
@@ -267,6 +286,33 @@ function Cadastro() {
                   min="1"
                   required
                 />
+              </div>
+              <div>
+                <label>Tipo:</label>
+                <br />
+                <select
+                  value={tipoPeriferico}
+                  onChange={e => setTipoPeriferico(e.target.value)}
+                  required
+                >
+                  <option value="">Selecione o tipo</option>
+                  <option value="teclado com fio">Teclado com fio</option>
+                  <option value="mouse com fio">Mouse com fio</option>
+                  <option value="teclado/mouse com fio">
+                    Teclado/Mouse com fio
+                  </option>
+                  <option value="mochila">Mochila</option>
+                  <option value="suporte ergonomico">Suporte ergonômico</option>
+                  <option value="headset bilateral">Headset bilateral</option>
+                  <option value="headset unilateral">Headset unilateral</option>
+                  <option value="cabo de seguranca">Cabo de segurança</option>
+                  <option value="hub usb">HUB usb</option>
+                  <option value="dosckstation">Dockstation</option>
+                  <option value="headset premium">Headset premium</option>
+                  <option value="webcam">Monitor</option>
+                  <option value="mouse sem fio">Mouse sem fio</option>
+                  <option value="teclado sem fio">Teclado sem fio</option>
+                </select>
               </div>
               <div>
                 <label>Modelo:</label>

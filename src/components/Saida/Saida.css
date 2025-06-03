@@ -1,54 +1,57 @@
 .saida {
-    display: flex;  
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    width: 100vw;
-    background-color: #3863ae;
-    overflow: hidden;
-   }
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
+  background-color: #3863ae;
+  overflow: hidden;
+}
 
-.inserir{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 70%;
-    height: 70%;
-    background-color: antiquewhite;
-    border-radius: 15px;
+.inserir {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 70%;
+  height: 70%;
+  background-color: antiquewhite;
+  border-radius: 15px;
 }
 
 .arquivo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 20%;
-    color: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 20%;
+  color: black;
 }
 
-.ativos{
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    color: black;
+.ativos {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  color: black;
 }
 
-.acessorios ,.notebook , .monitor{
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    width: 100%;
-    height: 100%;
-    align-items: center;
-    justify-content: start;
+.acessorios,
+.notebook,
+.monitor {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: start;
 }
 
-
-
-
-
-
+.acessorios > p,
+.notebook > p,
+.monitor > p {
+  margin: 5px;
+  padding: 5px;
+}
