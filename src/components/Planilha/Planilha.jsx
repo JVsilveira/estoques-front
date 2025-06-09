@@ -1,14 +1,54 @@
-import React, { useContext } from "react"
+import React, { useContext, useState } from "react"
 import * as XLSX from "xlsx"
 import "./Planilha.css"
 import { TransferEntrada } from "../Transfer/TransferEntrada"
 import { TransferSaida } from "../Transfer/TransferSaida"
 
 function Planilha() {
-  const { data, setData } = useContext(TransferEntrada)
+  const { data } = useContext(TransferEntrada)
   const { itemSaiu } = useContext(TransferSaida)
 
+  const [filters, setFilters] = useState({
+    tipo: "",
+    serialNumber: "",
+    modelo: "",
+    marca: "",
+    notaFiscal: "",
+    disponibilidade: "",
+  })
+
   const dados = data.length > 0 ? data : []
+
+  const handleFilterChange = (e, campo) => {
+    setFilters({ ...filters, [campo]: e.target.value })
+  }
+
+  const verificarStatusUso = item => {
+    return itemSaiu.some(
+      saido =>
+        saido.serialNumber === item.serialNumber &&
+        saido.modelo === item.modelo &&
+        saido.marca === item.marca
+    )
+  }
+
+  const dadosFiltrados = dados.filter(item => {
+    return (
+      item.tipo?.toLowerCase().includes(filters.tipo.toLowerCase()) &&
+      item.serialNumber
+        ?.toLowerCase()
+        .includes(filters.serialNumber.toLowerCase()) &&
+      item.modelo?.toLowerCase().includes(filters.modelo.toLowerCase()) &&
+      item.marca?.toLowerCase().includes(filters.marca.toLowerCase()) &&
+      item.notaFiscal
+        ?.toLowerCase()
+        .includes(filters.notaFiscal.toLowerCase()) &&
+      (filters.disponibilidade === "" ||
+        (filters.disponibilidade === "Em estoque" &&
+          (item.disponibilidade || "") === "Em estoque") ||
+        (filters.disponibilidade === "Em uso" && verificarStatusUso(item)))
+    )
+  })
 
   const exportToExcel = () => {
     if (dados.length === 0) {
@@ -31,15 +71,6 @@ function Planilha() {
     XLSX.writeFile(wb, "planilha.xlsx")
   }
 
-  const verificarStatusUso = item => {
-    return itemSaiu.some(
-      saido =>
-        saido.serialNumber === item.serialNumber &&
-        saido.modelo === item.modelo &&
-        saido.marca === item.marca
-    )
-  }
-
   return (
     <div className="planilha">
       <div className="inserir">
@@ -48,17 +79,78 @@ function Planilha() {
           <table className="planilha-tabela">
             <thead>
               <tr>
-                <th>Tipo</th>
-                <th>Serial Number</th>
-                <th>Modelo</th>
-                <th>Marca</th>
-                <th>Nota Fiscal</th>
-                <th>Disponibilidade</th>
+                <th>
+                  Tipo
+                  <br />
+                  <input
+                    type="text"
+                    value={filters.tipo}
+                    onChange={e => handleFilterChange(e, "tipo")}
+                    placeholder="Filtrar"
+                  />
+                </th>
+                <th>
+                  Serial Number
+                  <br />
+                  <input
+                    type="text"
+                    value={filters.serialNumber}
+                    onChange={e => handleFilterChange(e, "serialNumber")}
+                    placeholder="Filtrar"
+                  />
+                </th>
+                <th>
+                  Modelo
+                  <br />
+                  <input
+                    type="text"
+                    value={filters.modelo}
+                    onChange={e => handleFilterChange(e, "modelo")}
+                    placeholder="Filtrar"
+                  />
+                </th>
+                <th>
+                  Marca
+                  <br />
+                  <input
+                    type="text"
+                    value={filters.marca}
+                    onChange={e => handleFilterChange(e, "marca")}
+                    placeholder="Filtrar"
+                  />
+                </th>
+                <th>
+                  Nota Fiscal
+                  <br />
+                  <input
+                    type="text"
+                    value={filters.notaFiscal}
+                    onChange={e => handleFilterChange(e, "notaFiscal")}
+                    placeholder="Filtrar"
+                  />
+                </th>
+                <th>
+                  Disponibilidade
+                  <br />
+                  <select
+                    value={filters.disponibilidade}
+                    onChange={e => handleFilterChange(e, "disponibilidade")}
+                  >
+                    <option value="">Todos</option>
+                    <option value="Em estoque">Em estoque</option>
+                    <option value="Em uso">Em uso</option>
+                  </select>
+                </th>
               </tr>
             </thead>
             <tbody>
-              {dados.map((item, index) => {
+              {dadosFiltrados.map((item, index) => {
                 const emUso = verificarStatusUso(item)
+                const disponibilidade =
+                  (item.disponibilidade === "Em estoque" && "Em estoque") ||
+                  (emUso && "Em uso") ||
+                  "N/A"
+
                 return (
                   <tr key={index}>
                     <td>{item.tipo || "N/A"}</td>
@@ -69,15 +161,11 @@ function Planilha() {
                     <td
                       style={{
                         color:
-                          item.disponibilidade === "Em estoque"
-                            ? "green"
-                            : "red",
+                          disponibilidade === "Em estoque" ? "green" : "red",
                         fontWeight: "bold",
                       }}
                     >
-                      {item.disponibilidade === "Em estoque"
-                        ? "Em estoque"
-                        : "Em uso"}
+                      {disponibilidade}
                     </td>
                   </tr>
                 )
