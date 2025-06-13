@@ -76,3 +76,16 @@
   background-color: crimson;
   color: white;
 }
+
+.load-dados {
+  display: flex;
+  flex: 1;
+  color: black;
+  align-items: center;
+  justify-content: center;
+}
+
+.seletor-regiao select {
+  position: relative;
+  z-index: 10;
+}

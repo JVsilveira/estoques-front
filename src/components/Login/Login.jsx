@@ -17,9 +17,9 @@ function Login() {
     e.preventDefault()
     try {
       await login(matricula, senha)
-      navigate("/Planilha")
+      navigate("/Home")
     } catch (err) {
-      setError(err)
+      setError(err.message || "Erro no login")
     }
   }
 
@@ -32,11 +32,12 @@ function Login() {
             <div className="form-group">
               <label htmlFor="matricula">Matrícula:</label>
               <input
-                type="matricula"
+                type="text"
                 className="form-control"
                 id="matricula"
                 value={matricula}
                 onChange={e => setMatricula(e.target.value)}
+                required
               />
             </div>
             <div className="form-group">
@@ -47,9 +48,12 @@ function Login() {
                 id="senha"
                 value={senha}
                 onChange={e => setSenha(e.target.value)}
+                required
               />
             </div>
-            {error && <p style={{ color: "red" }}>{error}</p>}
+            {error && (
+              <div className="erro-login">Matrícula e/ou senha incorretos.</div>
+            )}
             <div className="botaoLogar">
               <button type="submit" className="logar">
                 Entrar

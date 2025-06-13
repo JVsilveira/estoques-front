@@ -1,5 +1,5 @@
 import React from "react"
-import { Routes, Route } from "react-router-dom"
+import { Routes as ReactRoutes, Route } from "react-router-dom"
 import Login from "../../components/Login/Login"
 import Estoque from "../../components/Estoque/Estoque"
 import Screen from "../../components/Templates/Screen/Screen"
@@ -9,63 +9,79 @@ import Cadastro from "../../components/Cadastro/Cadastro"
 import Planilha from "../../components/Planilha/Planilha"
 import { TransferEntradaProvider } from "../../components/Transfer/TransferEntrada"
 import { TransferSaidaProvider } from "../../components/Transfer/TransferSaida"
+import PrivateRoute from "./PrivateRoute"
 
-export default function AppRoutes() {
+export default function Routes() {
   return (
-    <Routes>
+    <ReactRoutes>
       <Route path="/" element={<Login />} />
+
       <Route
         path="/Planilha"
         element={
-          <Screen>
-            <TransferEntradaProvider>
-              <TransferSaidaProvider>
-                <Planilha />
-              </TransferSaidaProvider>
-            </TransferEntradaProvider>
-          </Screen>
+          <PrivateRoute>
+            <Screen>
+              <TransferEntradaProvider>
+                <TransferSaidaProvider>
+                  <Planilha />
+                </TransferSaidaProvider>
+              </TransferEntradaProvider>
+            </Screen>
+          </PrivateRoute>
         }
       />
+
       <Route
         path="/Home"
         element={
-          <Screen>
-            <Estoque />
-          </Screen>
+          <PrivateRoute>
+            <Screen>
+              <Estoque />
+            </Screen>
+          </PrivateRoute>
         }
       />
-      <Route
-        path="/Saida"
-        element={
-          <Screen>
-            <TransferEntradaProvider>
-              <TransferSaidaProvider>
-                <Saida />
-              </TransferSaidaProvider>
-            </TransferEntradaProvider>
-          </Screen>
-        }
-      />
+
       <Route
         path="/Entrada"
         element={
-          <Screen>
-            <TransferEntradaProvider>
-              <TransferSaidaProvider>
-                <Entrada />
-              </TransferSaidaProvider>
-            </TransferEntradaProvider>
-          </Screen>
+          <PrivateRoute>
+            <Screen>
+              <TransferEntradaProvider>
+                <TransferSaidaProvider>
+                  <Entrada />
+                </TransferSaidaProvider>
+              </TransferEntradaProvider>
+            </Screen>
+          </PrivateRoute>
         }
       />
+
+      <Route
+        path="/Saida"
+        element={
+          <PrivateRoute>
+            <Screen>
+              <TransferEntradaProvider>
+                <TransferSaidaProvider>
+                  <Saida />
+                </TransferSaidaProvider>
+              </TransferEntradaProvider>
+            </Screen>
+          </PrivateRoute>
+        }
+      />
+
       <Route
         path="/Cadastro"
         element={
-          <Screen>
-            <Cadastro />
-          </Screen>
+          <PrivateRoute>
+            <Screen>
+              <Cadastro />
+            </Screen>
+          </PrivateRoute>
         }
       />
-    </Routes>
+    </ReactRoutes>
   )
 }

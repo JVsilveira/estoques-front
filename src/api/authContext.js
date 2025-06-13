@@ -1,34 +1,25 @@
-import { createContext, useContext, useState } from 'react';
-import { login as loginService } from '../api/authService';
+import { createContext, useContext, useState } from "react"
+import { login as loginService } from "./authService"
 
-const AuthContext = createContext();
+const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(() => localStorage.getItem('token'));
+  const [token, setToken] = useState(null)
 
-  const login = async (email, senha) => {
-    try {
-      const data = await loginService(email, senha);
-      setToken(data.token);
-      localStorage.setItem('token', data.token);
-      setUser({ email });  // ou mais dados conforme sua API
-    } catch (error) {
-      throw error;
+  const login = async (matricula, senha) => {
+    const result = await loginService(matricula, senha)
+    if (result?.token) {
+      setToken(result.token)
+    } else {
+      throw new Error("Token inválido")
     }
-  };
-
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem('token');
-  };
+  }
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider value={{ token, login }}>
       {children}
     </AuthContext.Provider>
-  );
-};
+  )
+}
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => useContext(AuthContext)
