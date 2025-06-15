@@ -165,7 +165,7 @@ function Cadastro() {
                   onChange={e => setTipoAtivo(e.target.value)}
                   required
                 >
-                  <option value="">Selecione o tipo</option>
+                  <option value="">Selecione</option>
                   <option value="notebook">Notebook</option>
                   <option value="desktop">Desktop</option>
                   <option value="minidesktop">Minidesktop</option>
@@ -295,7 +295,7 @@ function Cadastro() {
                   onChange={e => setTipoPeriferico(e.target.value)}
                   required
                 >
-                  <option value="">Selecione o tipo</option>
+                  <option value="">Selecione</option>
                   <option value="teclado com fio">Teclado com fio</option>
                   <option value="mouse com fio">Mouse com fio</option>
                   <option value="teclado/mouse com fio">

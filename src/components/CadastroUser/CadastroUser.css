@@ -1,0 +1,54 @@
+.entrada {
+    display: flex;  
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100vw;
+    background-color: #3863ae;
+    overflow: hidden;
+   }
+
+.inserir{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 70%;
+    height: 70%;
+    background-color: antiquewhite;
+    border-radius: 15px;
+}
+.form-user {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.form-user > form {
+    display: flex;
+    flex-direction: column;
+    }
+
+.form-user > form > input {
+    margin: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 200px;
+}
+
+.form-user > form > select {
+    margin: 10px;
+    margin-bottom: 50px;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 220px;
+
+}
+

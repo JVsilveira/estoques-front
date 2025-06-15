@@ -10,7 +10,7 @@ function Estoque() {
   const role = decoded?.role || "USER"
   const regiaoToken = decoded?.regiao || "SP" // para usuários comuns
 
-  const regioesDisponiveis = ["SP", "RJ", "MG", "RS", "BA"]
+  const regioesDisponiveis = ["PISA", "SIGMA", "LAPA", "TRJ", 'CEO', "MG", "RS", 'SEMINÁRIO', "CE", "BA", 'PE','PA', "DF" ]
 
   const [regiaoSelecionada, setRegiaoSelecionada] = useState(
     role === "ADMIN" ? "TODAS" : regiaoToken

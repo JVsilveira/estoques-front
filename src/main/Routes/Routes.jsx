@@ -6,10 +6,12 @@ import Screen from "../../components/Templates/Screen/Screen"
 import Entrada from "../../components/Entrada/Entrada"
 import Saida from "../../components/Saida/Saida"
 import Cadastro from "../../components/Cadastro/Cadastro"
+import CadastroUser from "../../components/CadastroUser/CadastroUser"
 import Planilha from "../../components/Planilha/Planilha"
 import { TransferEntradaProvider } from "../../components/Transfer/TransferEntrada"
 import { TransferSaidaProvider } from "../../components/Transfer/TransferSaida"
 import PrivateRoute from "./PrivateRoute"
+import RotaAdmin from "./RotaAdmin"
 
 export default function Routes() {
   return (
@@ -82,6 +84,19 @@ export default function Routes() {
           </PrivateRoute>
         }
       />
+
+      <Route
+  path="/CadastroUser"
+  element={
+    <PrivateRoute>
+      <RotaAdmin>
+        <Screen>
+        <CadastroUser />
+        </Screen>
+      </RotaAdmin>
+    </PrivateRoute>
+  }
+/>
     </ReactRoutes>
   )
 }
