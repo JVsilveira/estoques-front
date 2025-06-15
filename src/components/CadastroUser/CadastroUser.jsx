@@ -6,6 +6,7 @@ const CadastroUser = () => {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [matricula, setMatricula] = useState("");
   const [role, setRole] = useState("USER"); // USER ou ADMIN
 
   const handleSubmit = async (e) => {
@@ -18,6 +19,7 @@ const CadastroUser = () => {
         "http://localhost:8080/api/admin/cadastrar",
         {
           nome,
+          matricula,
           email,
           senha,
           role,
@@ -28,18 +30,24 @@ const CadastroUser = () => {
           },
           
         },
-        console.log("Dados enviados:", {nome, email, senha, role})
+        console.log("Dados enviados:", {nome, matricula, email, senha, role})
       );
       
 
       alert("Usuário cadastrado com sucesso!");
       setNome("");
+      setMatricula("");
       setEmail("");
       setSenha("");
       setRole("");
     } catch (error) {
       console.error("Erro ao cadastrar usuário", error);
       alert("Erro ao cadastrar usuário.");
+      setNome("");
+      setMatricula("");
+      setEmail("");
+      setSenha("");
+      setRole("");
     }
   };
 
@@ -47,7 +55,7 @@ const CadastroUser = () => {
    
       <div className="entrada">
       <div className="inserir">
-        <div className="titulo">Cadastro de Usuário</div>
+        <div className="titulo">CADASTRO DE USUÁRIO</div>
         
       <div className="form-user">
       <form onSubmit={handleSubmit}>
@@ -56,6 +64,13 @@ const CadastroUser = () => {
           placeholder="Nome"
           value={nome}
           onChange={(e) => setNome(e.target.value)}
+          required
+        />
+        <input
+          type="text"
+          placeholder="Matrícula"
+          value={matricula}
+          onChange={(e) => setMatricula(e.target.value)}
           required
         />
         <input
