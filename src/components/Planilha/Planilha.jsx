@@ -1,8 +1,10 @@
-import React, { useContext, useState } from "react"
+import React, { useContext, useEffect, useState } from "react"
 import * as XLSX from "xlsx"
 import "./Planilha.css"
 import { TransferEntrada } from "../Transfer/TransferEntrada"
 import { TransferSaida } from "../Transfer/TransferSaida"
+import axios from "axios"
+import { jwtDecode } from "jwt-decode"
 
 function Planilha() {
   const { data } = useContext(TransferEntrada)
@@ -16,6 +18,32 @@ function Planilha() {
     notaFiscal: "",
     disponibilidade: "",
   })
+
+  const [regiaoSelecionada, setRegiaoSelecionada] = useState("")
+  const [regioesDisponiveis, setRegioesDisponiveis] = useState([
+    "TODAS",
+    "PISA",
+    "SIGMA",
+    "LAPA",
+    "TRJ",
+    "CEO",
+    "MG",
+    "RS",
+    "SEMINÁRIO",
+    "CE",
+    "BA",
+    "PE",
+    "PA",
+    "DF",
+  ])
+  const [loading, setLoading] = useState(false)
+  const [erro, setErro] = useState(null)
+  const [quantidades, setQuantidades] = useState({})
+
+  const token = localStorage.getItem("token")
+  const decodedToken = token ? jwtDecode(token) : {}
+  const role = decodedToken?.role || ""
+  const regiaoToken = decodedToken?.regiao || ""
 
   const dados = data.length > 0 ? data : []
 
@@ -31,6 +59,33 @@ function Planilha() {
         saido.marca === item.marca
     )
   }
+
+  useEffect(() => {
+    if (!regiaoSelecionada && role === "ADMIN") return
+
+    setLoading(true)
+    setErro(null)
+
+    const rotaAPI =
+      role === "ADMIN"
+        ? regiaoSelecionada === "TODAS"
+          ? "http://localhost:8080/admin/planilha"
+          : `http://localhost:8080/admin/planilha/${regiaoSelecionada}`
+        : `http://localhost:8080/planilha/${regiaoToken}`
+
+    axios
+      .get(rotaAPI)
+      .then(response => {
+        setQuantidades(prev => ({ ...prev, ...response.data }))
+      })
+      .catch(error => {
+        console.error("Erro ao buscar os dados da API:", error)
+        setErro("Erro ao carregar os dados.")
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }, [regiaoSelecionada, role, regiaoToken])
 
   const dadosFiltrados = dados.filter(item => {
     return (
@@ -49,9 +104,8 @@ function Planilha() {
         (filters.disponibilidade === "Em uso" && verificarStatusUso(item)))
     )
   })
-
   const exportToExcel = () => {
-    if (dados.length === 0) {
+    if (dadosFiltrados.length === 0) {
       alert("Nenhum dado para exportar!")
       return
     }
@@ -75,104 +129,109 @@ function Planilha() {
     <div className="planilha">
       <div className="inserir">
         <div className="titulo">PLANILHA</div>
-        <div className="planilha-container">
-          <table className="planilha-tabela">
-            <thead>
-              <tr>
-                <th>
-                  Tipo
-                  <br />
-                  <input
-                    type="text"
-                    value={filters.tipo}
-                    onChange={e => handleFilterChange(e, "tipo")}
-                    placeholder="Filtrar"
-                  />
-                </th>
-                <th>
-                  Serial Number
-                  <br />
-                  <input
-                    type="text"
-                    value={filters.serialNumber}
-                    onChange={e => handleFilterChange(e, "serialNumber")}
-                    placeholder="Filtrar"
-                  />
-                </th>
-                <th>
-                  Modelo
-                  <br />
-                  <input
-                    type="text"
-                    value={filters.modelo}
-                    onChange={e => handleFilterChange(e, "modelo")}
-                    placeholder="Filtrar"
-                  />
-                </th>
-                <th>
-                  Marca
-                  <br />
-                  <input
-                    type="text"
-                    value={filters.marca}
-                    onChange={e => handleFilterChange(e, "marca")}
-                    placeholder="Filtrar"
-                  />
-                </th>
-                <th>
-                  Nota Fiscal
-                  <br />
-                  <input
-                    type="text"
-                    value={filters.notaFiscal}
-                    onChange={e => handleFilterChange(e, "notaFiscal")}
-                    placeholder="Filtrar"
-                  />
-                </th>
-                <th>
-                  Disponibilidade
-                  <br />
-                  <select
-                    value={filters.disponibilidade}
-                    onChange={e => handleFilterChange(e, "disponibilidade")}
-                  >
-                    <option value="">Todos</option>
-                    <option value="Em estoque">Em estoque</option>
-                    <option value="Em uso">Em uso</option>
-                  </select>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {dadosFiltrados.map((item, index) => {
-                const emUso = verificarStatusUso(item)
-                const disponibilidade =
-                  (item.disponibilidade === "Em estoque" && "Em estoque") ||
-                  (emUso && "Em uso") ||
-                  "N/A"
 
-                return (
-                  <tr key={index}>
-                    <td>{item.tipo || "N/A"}</td>
-                    <td>{item.serialNumber || "N/A"}</td>
-                    <td>{item.modelo || "N/A"}</td>
-                    <td>{item.marca || "N/A"}</td>
-                    <td>{item.notaFiscal || "N/A"}</td>
-                    <td
-                      style={{
-                        color:
-                          disponibilidade === "Em estoque" ? "green" : "red",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {disponibilidade}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+        {role === "ADMIN" && (
+          <div className="seletor-regiao">
+            <label htmlFor="regiao" style={{ color: "black" }}>
+              Selecione a região:
+            </label>
+            <select
+              id="regiao"
+              value={regiaoSelecionada}
+              onChange={e => {
+                const novaRegiao = e.target.value
+                setRegiaoSelecionada(novaRegiao)
+              }}
+            >
+              <option value="TODAS">Todas</option>
+              {regioesDisponiveis.map(regiao => (
+                <option key={regiao} value={regiao}>
+                  {regiao}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {loading && <div className="load-dados">Carregando dados...</div>}
+        {erro && <p style={{ color: "red" }}>{erro}</p>}
+
+        {!loading && !erro && (
+          <div className="planilha-container">
+            <table className="planilha-tabela">
+              <thead>
+                <tr>
+                  {[
+                    "Tipo",
+                    "Serial Number",
+                    "Modelo",
+                    "Marca",
+                    "Nota Fiscal",
+                    "Disponibilidade",
+                  ].map((campo, idx) => (
+                    <th key={idx}>
+                      {campo}
+                      <br />
+                      {campo === "Disponibilidade" ? (
+                        <select
+                          value={filters.disponibilidade}
+                          onChange={e =>
+                            handleFilterChange(e, "disponibilidade")
+                          }
+                        >
+                          <option value="">Todos</option>
+                          <option value="Em estoque">Em estoque</option>
+                          <option value="Em uso">Em uso</option>
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          value={filters[campo.replace(" ", "").toLowerCase()]}
+                          onChange={e =>
+                            handleFilterChange(
+                              e,
+                              campo.replace(" ", "").toLowerCase()
+                            )
+                          }
+                          placeholder="Filtrar"
+                        />
+                      )}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {dadosFiltrados.map((item, index) => {
+                  const emUso = verificarStatusUso(item)
+                  const disponibilidade =
+                    (item.disponibilidade === "Em estoque" && "Em estoque") ||
+                    (emUso && "Em uso") ||
+                    "N/A"
+
+                  return (
+                    <tr key={index}>
+                      <td>{item.tipo || "N/A"}</td>
+                      <td>{item.serialNumber || "N/A"}</td>
+                      <td>{item.modelo || "N/A"}</td>
+                      <td>{item.marca || "N/A"}</td>
+                      <td>{item.notaFiscal || "N/A"}</td>
+                      <td
+                        style={{
+                          color:
+                            disponibilidade === "Em estoque" ? "green" : "red",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {disponibilidade}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
         <button onClick={exportToExcel} className="btn-download">
           Baixar Excel
         </button>
