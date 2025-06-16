@@ -9,6 +9,16 @@ import { jwtDecode } from "jwt-decode"
 function Planilha() {
   const { data } = useContext(TransferEntrada)
   const { itemSaiu } = useContext(TransferSaida)
+  const [loading, setLoading] = useState(false)
+  const [erro, setErro] = useState(null)
+  const [quantidades, setQuantidades] = useState({})
+
+  const token = localStorage.getItem("token")
+  const decodedToken = token ? jwtDecode(token) : {}
+  const role = decodedToken?.role || ""
+  const regiaoToken = decodedToken?.regiao || ""
+
+  const dados = Array.isArray(quantidades) ? quantidades : []
 
   const [filters, setFilters] = useState({
     tipo: "",
@@ -19,9 +29,10 @@ function Planilha() {
     disponibilidade: "",
   })
 
-  const [regiaoSelecionada, setRegiaoSelecionada] = useState("")
+  const [regiaoSelecionada, setRegiaoSelecionada] = useState(
+    role === "ADMIN" ? "TODAS" : ""
+  )
   const [regioesDisponiveis, setRegioesDisponiveis] = useState([
-    "TODAS",
     "PISA",
     "SIGMA",
     "LAPA",
@@ -36,16 +47,6 @@ function Planilha() {
     "PA",
     "DF",
   ])
-  const [loading, setLoading] = useState(false)
-  const [erro, setErro] = useState(null)
-  const [quantidades, setQuantidades] = useState({})
-
-  const token = localStorage.getItem("token")
-  const decodedToken = token ? jwtDecode(token) : {}
-  const role = decodedToken?.role || ""
-  const regiaoToken = decodedToken?.regiao || ""
-
-  const dados = data.length > 0 ? data : []
 
   const handleFilterChange = (e, campo) => {
     setFilters({ ...filters, [campo]: e.target.value })
@@ -76,11 +77,33 @@ function Planilha() {
     axios
       .get(rotaAPI)
       .then(response => {
-        setQuantidades(prev => ({ ...prev, ...response.data }))
+        console.log("✅ Dados carregados da API")
+        setQuantidades(response.data)
       })
       .catch(error => {
-        console.error("Erro ao buscar os dados da API:", error)
-        setErro("Erro ao carregar os dados.")
+        console.error("⚠️ Erro na API, carregando dados mockados:", error)
+
+        // Dados mockados de exemplo
+        const dadosMockados = [
+          {
+            tipo: "Notebook",
+            serialNumber: "ABC12345",
+            modelo: "Dell Latitude 5420",
+            marca: "Dell",
+            notaFiscal: "NF12345",
+            disponibilidade: "Em estoque",
+          },
+          {
+            tipo: "Monitor",
+            serialNumber: "XYZ98765",
+            modelo: "Samsung 24",
+            marca: "Samsung",
+            notaFiscal: "NF54321",
+            disponibilidade: "Em estoque",
+          },
+        ]
+
+        setQuantidades(dadosMockados)
       })
       .finally(() => {
         setLoading(false)
@@ -156,7 +179,7 @@ function Planilha() {
         {loading && <div className="load-dados">Carregando dados...</div>}
         {erro && <p style={{ color: "red" }}>{erro}</p>}
 
-        {!loading && !erro && (
+        {!loading && dados.length > 0 && (
           <div className="planilha-container">
             <table className="planilha-tabela">
               <thead>
