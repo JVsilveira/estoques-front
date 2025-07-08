@@ -91,6 +91,7 @@ const CadastroUser = () => {
         nome,
         matricula,
         email,
+        senha,
         role,
       })
       setNome("")
@@ -106,6 +107,7 @@ const CadastroUser = () => {
         nome,
         matricula,
         email,
+        senha,
         role,
       })
     }
