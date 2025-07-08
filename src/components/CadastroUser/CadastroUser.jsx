@@ -87,6 +87,12 @@ const CadastroUser = () => {
       )
 
       alert("Usuário cadastrado com sucesso!")
+      console.log("Usuário cadastrado:", {
+        nome,
+        matricula,
+        email,
+        role,
+      })
       setNome("")
       setMatricula("")
       setEmail("")
@@ -96,6 +102,12 @@ const CadastroUser = () => {
     } catch (error) {
       console.error("Erro ao cadastrar usuário", error)
       alert("Erro ao cadastrar usuário.")
+      console.log("Usuário cadastrado:", {
+        nome,
+        matricula,
+        email,
+        role,
+      })
     }
   }
 
@@ -125,12 +137,13 @@ const CadastroUser = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       )
-
+      console.log("Usuário atualizado:", dadosEdit)
       alert("Usuário atualizado com sucesso!")
       cancelarEdicao()
       carregarUsuarios()
     } catch (error) {
       console.error("Erro ao atualizar usuário:", error)
+      console.log("Usuário atualizado:", dadosEdit)
       alert("Erro ao atualizar.")
     }
   }
@@ -145,9 +158,11 @@ const CadastroUser = () => {
       })
 
       setUsuarios(usuarios.filter(u => u.id !== id))
+      console.log("Usuário deletado:", id)
       alert("Usuário deletado com sucesso!")
     } catch (error) {
       console.error("Erro ao deletar usuário:", error)
+      console.log("Usuário deletado:", id)
       alert("Erro ao deletar.")
     }
   }
