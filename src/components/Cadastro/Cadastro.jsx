@@ -46,24 +46,26 @@ function Cadastro() {
     }
 
     const dadosProduto = ativosList.map(ativo => ({
-      quantidade: quantidadeAtivo,
+      assetNumber: "", // opcional, ou gerar se necessário
+      serialNumber: ativo.serialNumber,
       tipo: tipoAtivo,
-      ativo: tipoAtivo,
       modelo: modeloAtivo,
       marca: marcaAtivo,
-      sku: skuAtivo,
-      notaFiscal: notaFiscalAtivo,
-      serialNumber: ativo.serialNumber,
-      disponibilidade: "Em estoque",
+      nfNumber: notaFiscalAtivo,
+      disponibilidade: "Disponível", // ajustar conforme necessário
+      accessoriesCounted: [], // você pode adicionar acessórios aqui
     }))
 
     setLoadingAtivo(true)
     try {
+      const token = localStorage.getItem("token")
       for (const ativo of dadosProduto) {
-        console.log("Cadastrando ativo:", ativo)
-        await api.post("/planilha/ativos", ativo)
+        await api.post("/assets/json", ativo, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
       }
       alert("Ativos cadastrados com sucesso!")
+      // reset
       setTipoAtivo("")
       setModeloAtivo("")
       setMarcaAtivo("")
@@ -73,29 +75,10 @@ function Cadastro() {
       setAtivosList([])
     } catch (error) {
       console.error("Erro ao cadastrar ativos:", error)
-      alert("Erro ao cadastrar ativos. Tente novamente.")
+      alert("Erro ao cadastrar ativos.")
     } finally {
       setLoadingAtivo(false)
     }
-  }
-
-  // Funções para PERIFÉRICOS
-  const handleQuantidadePerifericoChange = e =>
-    setQuantidadePeriferico(Number(e.target.value))
-
-  const handleQuantidadePerifericoBlur = () => {
-    let qtd = Number(quantidadePeriferico)
-    if (qtd < 1 || isNaN(qtd)) qtd = 1
-    setQuantidadePeriferico(qtd)
-    setPerifericosList(
-      Array.from({ length: qtd }, () => ({ serialNumber: "" }))
-    )
-  }
-
-  const handleSerialNumberPerifericoChange = (index, value) => {
-    const newPerifericos = [...perifericosList]
-    newPerifericos[index] = { serialNumber: value }
-    setPerifericosList(newPerifericos)
   }
 
   const handleSubmitPeriferico = async e => {
@@ -105,22 +88,21 @@ function Cadastro() {
       return
     }
 
-    const dadosPeriferico = perifericosList.map(p => ({
-      quantidade: quantidadePeriferico,
-      tipo: tipoPeriferico,
-      modelo: modeloPeriferico,
-      marca: marcaPeriferico,
-      sku: skuPeriferico,
-      notaFiscal: notaFiscalPeriferico,
-      serialNumber: p.serialNumber,
-      disponibilidade: "Em estoque",
-    }))
-
     setLoadingPeriferico(true)
     try {
-      for (const periferico of dadosPeriferico) {
-        console.log("Cadastrando periférico:", periferico)
-        await api.post("/planilha/perifericos", periferico)
+      const token = localStorage.getItem("token")
+      for (const p of perifericosList) {
+        await api.post(
+          "/peripherals",
+          {
+            name: tipoPeriferico,
+            quantity: 1,
+            region: null, // se admin preencher, senão backend usa user.region
+          },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
       }
       alert("Periféricos cadastrados com sucesso!")
       setTipoPeriferico("")
@@ -132,7 +114,7 @@ function Cadastro() {
       setPerifericosList([])
     } catch (error) {
       console.error("Erro ao cadastrar periféricos:", error)
-      alert("Erro ao cadastrar periféricos. Tente novamente.")
+      alert("Erro ao cadastrar periféricos.")
     } finally {
       setLoadingPeriferico(false)
     }

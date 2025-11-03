@@ -1,54 +1,53 @@
-import axios from "axios";
+// src/services/api.js
+import axios from "axios"
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "http://localhost:8080/api",
+  baseURL: process.env.REACT_APP_API_URL || "http://localhost:8000", // Porta do FastAPI
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
   },
-});
+})
 
-// Função isolada para obter token
-const getToken = () => {
-  return localStorage.getItem("token");
-};
+// Função para obter token do localStorage
+const getToken = () => localStorage.getItem("access_token")
 
-// Interceptor de requisição
+// Interceptor de requisição: injeta o token no header
 api.interceptors.request.use(
   config => {
-    const token = getToken();
+    const token = getToken()
     if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`
     }
-    return config;
+    return config
   },
   error => Promise.reject(error)
-);
+)
 
-// Interceptor de resposta
+// Interceptor de resposta: trata erros comuns
 api.interceptors.response.use(
   response => response,
   error => {
-    const { response } = error;
+    const { response } = error
 
     if (process.env.NODE_ENV === "development") {
-      console.error("Erro na resposta da API:", response || error);
+      console.error("Erro na resposta da API:", response || error)
     }
 
-    // Tratamento específico para status
     if (response) {
       if (response.status === 401) {
-        // Usuário não autorizado - talvez redirecionar ou deslogar
-        console.warn("Usuário não autorizado. Redirecionar para login.");
+        console.warn("Token inválido ou expirado. Redirecionando para login...")
+        localStorage.removeItem("access_token")
+        window.location.href = "/login" // Redireciona automaticamente
       } else if (response.status >= 500) {
-        console.error("Erro interno no servidor.");
+        console.error("Erro interno no servidor (500).")
       }
     } else {
-      console.error("Sem resposta do servidor. Verifique sua conexão.");
+      console.error("Sem resposta do servidor. Verifique sua conexão.")
     }
 
-    return Promise.reject(error);
+    return Promise.reject(error)
   }
-);
+)
 
-export default api;
+export default api

@@ -4,21 +4,20 @@ import "./Planilha.css"
 import { TransferEntrada } from "../Transfer/TransferEntrada"
 import { TransferSaida } from "../Transfer/TransferSaida"
 import axios from "axios"
-import { jwtDecode } from "jwt-decode"
+import jwt_decode from "jwt-decode" // ✅ Corrigido: import correto
 
 function Planilha() {
   const { data } = useContext(TransferEntrada)
   const { itemSaiu } = useContext(TransferSaida)
+
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState(null)
-  const [quantidades, setQuantidades] = useState({})
+  const [dados, setDados] = useState([])
 
   const token = localStorage.getItem("token")
-  const decodedToken = token ? jwtDecode(token) : {}
+  const decodedToken = token ? jwt_decode(token) : {}
   const role = decodedToken?.role || ""
   const regiaoToken = decodedToken?.regiao || ""
-
-  const dados = Array.isArray(quantidades) ? quantidades : []
 
   const [filters, setFilters] = useState({
     tipo: "",
@@ -32,7 +31,8 @@ function Planilha() {
   const [regiaoSelecionada, setRegiaoSelecionada] = useState(
     role === "ADMIN" ? "TODAS" : ""
   )
-  const [regioesDisponiveis, setRegioesDisponiveis] = useState([
+
+  const regioesDisponiveis = [
     "PISA",
     "SIGMA",
     "LAPA",
@@ -46,7 +46,7 @@ function Planilha() {
     "PE",
     "PA",
     "DF",
-  ])
+  ]
 
   const handleFilterChange = (e, campo) => {
     setFilters({ ...filters, [campo]: e.target.value })
@@ -61,6 +61,7 @@ function Planilha() {
     )
   }
 
+  // 🔹 Carregar dados da API
   useEffect(() => {
     if (!regiaoSelecionada && role === "ADMIN") return
 
@@ -76,14 +77,9 @@ function Planilha() {
 
     axios
       .get(rotaAPI)
-      .then(response => {
-        console.log("✅ Dados carregados da API")
-        setQuantidades(response.data)
-      })
+      .then(response => setDados(response.data))
       .catch(error => {
-        console.error("⚠️ Erro na API, carregando dados mockados:", error)
-
-        // Dados mockados de exemplo
+        console.error("Erro na API, carregando dados mockados:", error)
         const dadosMockados = [
           {
             tipo: "Notebook",
@@ -102,14 +98,12 @@ function Planilha() {
             disponibilidade: "Em estoque",
           },
         ]
-
-        setQuantidades(dadosMockados)
+        setDados(dadosMockados)
       })
-      .finally(() => {
-        setLoading(false)
-      })
+      .finally(() => setLoading(false))
   }, [regiaoSelecionada, role, regiaoToken])
 
+  // 🔹 Filtro dos dados
   const dadosFiltrados = dados.filter(item => {
     return (
       item.tipo?.toLowerCase().includes(filters.tipo.toLowerCase()) &&
@@ -127,13 +121,15 @@ function Planilha() {
         (filters.disponibilidade === "Em uso" && verificarStatusUso(item)))
     )
   })
+
+  // 🔹 Exportar para Excel
   const exportToExcel = () => {
     if (dadosFiltrados.length === 0) {
       alert("Nenhum dado para exportar!")
       return
     }
 
-    const dadosParaExportar = dados.map(item => ({
+    const dadosParaExportar = dadosFiltrados.map(item => ({
       Tipo: item.tipo || "N/A",
       SerialNumber: item.serialNumber || "N/A",
       Modelo: item.modelo || "N/A",
@@ -161,10 +157,7 @@ function Planilha() {
             <select
               id="regiao"
               value={regiaoSelecionada}
-              onChange={e => {
-                const novaRegiao = e.target.value
-                setRegiaoSelecionada(novaRegiao)
-              }}
+              onChange={e => setRegiaoSelecionada(e.target.value)}
             >
               <option value="TODAS">Todas</option>
               {regioesDisponiveis.map(regiao => (

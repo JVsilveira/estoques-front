@@ -3,176 +3,125 @@ import axios from "axios"
 import "./CadastroUser.css"
 
 const CadastroUser = () => {
-  const [nome, setNome] = useState("")
+  const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
-  const [senha, setSenha] = useState("")
-  const [matricula, setMatricula] = useState("")
+  const [password, setPassword] = useState("")
+  const [registrationNumber, setRegistrationNumber] = useState("")
   const [role, setRole] = useState("USER")
+  const [region, setRegion] = useState("")
 
   const [usuarios, setUsuarios] = useState([])
   const [busca, setBusca] = useState("")
   const [editando, setEditando] = useState(null)
   const [dadosEdit, setDadosEdit] = useState({
-    nome: "",
-    matricula: "",
+    username: "",
+    registration_number: "",
     email: "",
     role: "",
+    region: "",
   })
 
-  // Carregar usuários ao iniciar
   useEffect(() => {
     carregarUsuarios()
   }, [])
 
   const carregarUsuarios = async () => {
     try {
-      const token = localStorage.getItem("token")
-      const response = await axios.get(
-        "http://localhost:8080/api/admin/usuarios",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      )
+      const token = localStorage.getItem("access_token")
+      const response = await axios.get("http://localhost:8080/users", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
       setUsuarios(response.data)
     } catch (error) {
       console.error("Erro ao carregar usuários:", error)
-      // Dados fake para testes locais
-      const usuariosFicticios = [
-        {
-          id: 1,
-          nome: "João da Silva",
-          matricula: "20231234",
-          email: "joao.silva@example.com",
-          role: "USER",
-        },
-        {
-          id: 2,
-          nome: "Maria Oliveira",
-          matricula: "20239876",
-          email: "maria.oliveira@example.com",
-          role: "ADMIN",
-        },
-        {
-          id: 3,
-          nome: "Carlos Souza",
-          matricula: "20237654",
-          email: "carlos.souza@example.com",
-          role: "USER",
-        },
-      ]
-      setUsuarios(usuariosFicticios)
     }
   }
 
   const handleSubmit = async e => {
     e.preventDefault()
-
     try {
-      const token = localStorage.getItem("token")
-
-      await axios.post(
-        "http://localhost:8080/api/admin/cadastrar",
-        {
-          nome,
-          matricula,
-          email,
-          senha,
-          role,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      )
-
-      alert("Usuário cadastrado com sucesso!")
-      console.log("Usuário cadastrado:", {
-        nome,
-        matricula,
+      const token = localStorage.getItem("access_token")
+      const payload = {
+        username,
+        registration_number: registrationNumber,
         email,
-        senha,
+        password,
         role,
+        region,
+      }
+      await axios.post("http://localhost:8080/users", payload, {
+        headers: { Authorization: `Bearer ${token}` },
       })
-      setNome("")
-      setMatricula("")
+      alert("Usuário cadastrado com sucesso!")
+      setUsername("")
+      setRegistrationNumber("")
       setEmail("")
-      setSenha("")
+      setPassword("")
       setRole("USER")
+      setRegion("")
       carregarUsuarios()
     } catch (error) {
-      console.error("Erro ao cadastrar usuário", error)
+      console.error("Erro ao cadastrar usuário:", error)
       alert("Erro ao cadastrar usuário.")
-      console.log("Usuário cadastrado:", {
-        nome,
-        matricula,
-        email,
-        senha,
-        role,
-      })
     }
   }
 
   const iniciarEdicao = usuario => {
     setEditando(usuario.id)
     setDadosEdit({
-      nome: usuario.nome,
-      matricula: usuario.matricula,
+      username: usuario.username,
+      registration_number: usuario.registration_number,
       email: usuario.email,
       role: usuario.role,
+      region: usuario.region || "",
     })
   }
 
   const cancelarEdicao = () => {
     setEditando(null)
-    setDadosEdit({ nome: "", matricula: "", email: "", role: "" })
+    setDadosEdit({
+      username: "",
+      registration_number: "",
+      email: "",
+      role: "",
+      region: "",
+    })
   }
 
   const salvarEdicao = async id => {
     try {
-      const token = localStorage.getItem("token")
-
-      await axios.put(
-        `http://localhost:8080/api/admin/usuarios/${id}`,
-        dadosEdit,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      )
-      console.log("Usuário atualizado:", dadosEdit)
+      const token = localStorage.getItem("access_token")
+      await axios.put(`http://localhost:8080/users/${id}`, dadosEdit, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
       alert("Usuário atualizado com sucesso!")
       cancelarEdicao()
       carregarUsuarios()
     } catch (error) {
       console.error("Erro ao atualizar usuário:", error)
-      console.log("Usuário atualizado:", dadosEdit)
-      alert("Erro ao atualizar.")
+      alert("Erro ao atualizar usuário.")
     }
   }
 
   const deletarUsuario = async id => {
     if (!window.confirm("Tem certeza que deseja deletar este usuário?")) return
-
     try {
-      const token = localStorage.getItem("token")
-      await axios.delete(`http://localhost:8080/api/admin/usuarios/${id}`, {
+      const token = localStorage.getItem("access_token")
+      await axios.delete(`http://localhost:8080/users/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-
       setUsuarios(usuarios.filter(u => u.id !== id))
-      console.log("Usuário deletado:", id)
       alert("Usuário deletado com sucesso!")
     } catch (error) {
       console.error("Erro ao deletar usuário:", error)
-      console.log("Usuário deletado:", id)
       alert("Erro ao deletar.")
     }
   }
 
   const usuariosFiltrados = usuarios.filter(
     u =>
-      u.nome.toLowerCase().includes(busca.toLowerCase()) ||
-      u.matricula.toLowerCase().includes(busca.toLowerCase())
+      u.username.toLowerCase().includes(busca.toLowerCase()) ||
+      u.registration_number.toLowerCase().includes(busca.toLowerCase())
   )
 
   return (
@@ -184,16 +133,16 @@ const CadastroUser = () => {
             <form onSubmit={handleSubmit}>
               <input
                 type="text"
-                placeholder="Nome"
-                value={nome}
-                onChange={e => setNome(e.target.value)}
+                placeholder="Nome de usuário"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
                 required
               />
               <input
                 type="text"
                 placeholder="Matrícula"
-                value={matricula}
-                onChange={e => setMatricula(e.target.value)}
+                value={registrationNumber}
+                onChange={e => setRegistrationNumber(e.target.value)}
                 required
               />
               <input
@@ -206,14 +155,20 @@ const CadastroUser = () => {
               <input
                 type="password"
                 placeholder="Senha"
-                value={senha}
-                onChange={e => setSenha(e.target.value)}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
                 required
               />
               <select value={role} onChange={e => setRole(e.target.value)}>
                 <option value="USER">Usuário</option>
                 <option value="ADMIN">Administrador</option>
               </select>
+              <input
+                type="text"
+                placeholder="Região"
+                value={region}
+                onChange={e => setRegion(e.target.value)}
+              />
               <button type="submit">Cadastrar</button>
             </form>
           </div>
@@ -234,6 +189,7 @@ const CadastroUser = () => {
                   <th>Matrícula</th>
                   <th>Email</th>
                   <th>Função</th>
+                  <th>Região</th>
                   <th>Ações</th>
                 </tr>
               </thead>
@@ -244,22 +200,22 @@ const CadastroUser = () => {
                       <>
                         <td>
                           <input
-                            value={dadosEdit.nome}
+                            value={dadosEdit.username}
                             onChange={e =>
                               setDadosEdit({
                                 ...dadosEdit,
-                                nome: e.target.value,
+                                username: e.target.value,
                               })
                             }
                           />
                         </td>
                         <td>
                           <input
-                            value={dadosEdit.matricula}
+                            value={dadosEdit.registration_number}
                             onChange={e =>
                               setDadosEdit({
                                 ...dadosEdit,
-                                matricula: e.target.value,
+                                registration_number: e.target.value,
                               })
                             }
                           />
@@ -290,6 +246,17 @@ const CadastroUser = () => {
                           </select>
                         </td>
                         <td>
+                          <input
+                            value={dadosEdit.region}
+                            onChange={e =>
+                              setDadosEdit({
+                                ...dadosEdit,
+                                region: e.target.value,
+                              })
+                            }
+                          />
+                        </td>
+                        <td>
                           <button onClick={() => salvarEdicao(usuario.id)}>
                             Salvar
                           </button>
@@ -298,10 +265,11 @@ const CadastroUser = () => {
                       </>
                     ) : (
                       <>
-                        <td>{usuario.nome}</td>
-                        <td>{usuario.matricula}</td>
+                        <td>{usuario.username}</td>
+                        <td>{usuario.registration_number}</td>
                         <td>{usuario.email}</td>
                         <td>{usuario.role}</td>
+                        <td>{usuario.region || "-"}</td>
                         <td>
                           <button onClick={() => iniciarEdicao(usuario)}>
                             Editar

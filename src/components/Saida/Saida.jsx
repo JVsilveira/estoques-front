@@ -37,6 +37,7 @@ function Saída() {
       accessoriesCounted.push({
         name: modelMonitor,
         quantidade: 1,
+        serialNumber: serialMonitor,
       })
     }
 
