@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import "./Entrada.css"
 import { useContext } from "react"
 import { TransferEntrada } from "../Transfer/TransferEntrada"
-import axios from "axios"
+import api from "../../api/api"
 import { extractPdfText } from "../Utility/pdfUtils"
 
 function Entrada() {
@@ -203,19 +203,13 @@ function Entrada() {
   }
 
   const handleEnviarParaServidor = async () => {
-    const token = localStorage.getItem("token")
-    const linhasParaPlanilha = []
-
     const accessoriesCounted = accessories.map(item => ({
       name: item,
       quantidade: 1,
     }))
 
-    // Adiciona notebook como item
-    accessoriesCounted.push({
-      name: notebookModel,
-      quantidade: 1,
-    })
+    // Adiciona o notebook como ativo principal
+    accessoriesCounted.push({ name: notebookModel, quantidade: 1 })
 
     // Se houver monitor, adiciona também
     if (modelMonitor && serialMonitor) {
@@ -226,41 +220,45 @@ function Entrada() {
       })
     }
 
-    // Linha do Notebook
-    linhasParaPlanilha.push({
-      tipo: notebookTipo || "N/A",
-      serialNumber: serialNumber || "N/A",
-      modelo: notebookModel || "N/A",
-      marca: notebookBrand || "N/A",
-      accessoriesCounted,
-      disponibilidade: "Em estoque",
-    })
+    // Monta o objeto conforme o backend FastAPI espera (AssetInput)
+    const linhasParaPlanilha = [
+      {
+        assetNumber: serialNumber || "N/A",
+        serialNumber: serialNumber || "N/A",
+        tipo: notebookTipo || "N/A",
+        modelo: notebookModel || "N/A",
+        marca: notebookBrand || "N/A",
+        nfNumber: "N/A",
+        accessoriesCounted,
+        disponibilidade: "Disponível",
+      },
+    ]
 
-    // Linha do Monitor, se houver
+    // Adiciona o monitor como ativo separado, se existir
     if (modelMonitor || serialMonitor) {
       linhasParaPlanilha.push({
-        tipo: "Monitor",
+        assetNumber: serialMonitor || "N/A",
         serialNumber: serialMonitor || "N/A",
+        tipo: "Monitor",
         modelo: modelMonitor || "N/A",
         marca: "N/A",
-        disponibilidade: "Em estoque",
+        nfNumber: "N/A",
+        accessoriesCounted: [],
+        disponibilidade: "Disponível",
       })
     }
 
     try {
+      console.log("Enviando dados ao backend:", linhasParaPlanilha)
       for (const linha of linhasParaPlanilha) {
-        console.log("Enviando para o servidor:", linha)
-        await axios.post("/api/entrada", linha, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        await api.post("/assets/json", linha)
       }
       alert("Dados enviados ao servidor com sucesso!")
     } catch (error) {
+      console.error("Erro ao enviar dados:", error)
       alert("Erro ao enviar dados para o servidor.")
-      console.error("Erro ao enviar:", error)
     }
   }
-
   return (
     <div className="entrada">
       <div className="inserir">

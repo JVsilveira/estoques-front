@@ -81,6 +81,24 @@ function Cadastro() {
     }
   }
 
+  const handleQuantidadePerifericoChange = e =>
+    setQuantidadePeriferico(Number(e.target.value))
+
+  const handleQuantidadePerifericoBlur = () => {
+    let qtd = Number(quantidadePeriferico)
+    if (qtd < 1 || isNaN(qtd)) qtd = 1
+    setQuantidadePeriferico(qtd)
+    setPerifericosList(
+      Array.from({ length: qtd }, () => ({ serialNumber: "" }))
+    )
+  }
+
+  const handleSerialNumberPerifericoChange = (index, value) => {
+    const newPerifericos = [...perifericosList]
+    newPerifericos[index] = { serialNumber: value }
+    setPerifericosList(newPerifericos)
+  }
+
   const handleSubmitPeriferico = async e => {
     e.preventDefault()
     if (perifericosList.some(p => !p.serialNumber)) {

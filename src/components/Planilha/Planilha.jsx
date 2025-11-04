@@ -4,7 +4,7 @@ import "./Planilha.css"
 import { TransferEntrada } from "../Transfer/TransferEntrada"
 import { TransferSaida } from "../Transfer/TransferSaida"
 import axios from "axios"
-import jwt_decode from "jwt-decode" // ✅ Corrigido: import correto
+import { jwtDecode } from "jwt-decode"
 
 function Planilha() {
   const { data } = useContext(TransferEntrada)
@@ -15,7 +15,7 @@ function Planilha() {
   const [dados, setDados] = useState([])
 
   const token = localStorage.getItem("token")
-  const decodedToken = token ? jwt_decode(token) : {}
+  const decodedToken = token ? jwtDecode(token) : {}
   const role = decodedToken?.role || ""
   const regiaoToken = decodedToken?.regiao || ""
 
