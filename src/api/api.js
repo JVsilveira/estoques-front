@@ -1,18 +1,15 @@
-// src/services/api.js
 import axios from "axios"
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "http://localhost:8000", // Porta do FastAPI
+  baseURL: process.env.REACT_APP_API_URL || "http://localhost:8000", // Ajuste da porta
   timeout: 10000,
   headers: {
-    "Content-Type": "application/json",
+    "Content-Type": "application/json", // padrão para JSON
   },
 })
 
-// Função para obter token do localStorage
 const getToken = () => localStorage.getItem("access_token")
 
-// Interceptor de requisição: injeta o token no header
 api.interceptors.request.use(
   config => {
     const token = getToken()
@@ -24,7 +21,6 @@ api.interceptors.request.use(
   error => Promise.reject(error)
 )
 
-// Interceptor de resposta: trata erros comuns
 api.interceptors.response.use(
   response => response,
   error => {
@@ -38,7 +34,7 @@ api.interceptors.response.use(
       if (response.status === 401) {
         console.warn("Token inválido ou expirado. Redirecionando para login...")
         localStorage.removeItem("access_token")
-        window.location.href = "/login" // Redireciona automaticamente
+        window.location.href = "/login"
       } else if (response.status >= 500) {
         console.error("Erro interno no servidor (500).")
       }

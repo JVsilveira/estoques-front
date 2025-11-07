@@ -1,4 +1,3 @@
-// src/context/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from "react"
 import { login as loginService } from "./authService"
 import { jwtDecode } from "jwt-decode"
@@ -9,23 +8,26 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => localStorage.getItem("access_token"))
   const [usuario, setUsuario] = useState(() => {
     const savedToken = localStorage.getItem("access_token")
+    if (!savedToken) return null
     try {
-      return savedToken ? jwtDecode(savedToken) : null
-    } catch (error) {
-      console.error("Token inválido:", error)
+      return jwtDecode(savedToken)
+    } catch {
       localStorage.removeItem("access_token")
       return null
     }
   })
 
-  const login = async (username, password) => {
+  const login = async (matricula, senha) => {
+    setToken(null)
+    setUsuario(null)
+    localStorage.removeItem("access_token")
+
     try {
-      const result = await loginService(username, password)
+      const result = await loginService(matricula, senha)
       if (result?.access_token) {
         setToken(result.access_token)
         localStorage.setItem("access_token", result.access_token)
-        const decoded = jwtDecode(result.access_token)
-        setUsuario(decoded)
+        setUsuario(jwtDecode(result.access_token))
       } else {
         throw new Error("Token não retornado pela API")
       }
@@ -41,20 +43,10 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("access_token")
   }
 
-  useEffect(() => {
-    if (token) {
-      try {
-        const decoded = jwtDecode(token)
-        setUsuario(decoded)
-      } catch (error) {
-        console.error("Erro ao decodificar token:", error)
-        logout()
-      }
-    }
-  }, [token])
-
   return (
-    <AuthContext.Provider value={{ token, usuario, login, logout }}>
+    <AuthContext.Provider
+      value={{ token, usuario, login, logout, isAuthenticated: !!token }}
+    >
       {children}
     </AuthContext.Provider>
   )

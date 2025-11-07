@@ -17,7 +17,6 @@ export default function Routes() {
   return (
     <ReactRoutes>
       <Route path="/" element={<Login />} />
-
       <Route
         path="/Planilha"
         element={
@@ -32,7 +31,6 @@ export default function Routes() {
           </PrivateRoute>
         }
       />
-
       <Route
         path="/Home"
         element={
@@ -43,7 +41,6 @@ export default function Routes() {
           </PrivateRoute>
         }
       />
-
       <Route
         path="/Entrada"
         element={
@@ -58,7 +55,6 @@ export default function Routes() {
           </PrivateRoute>
         }
       />
-
       <Route
         path="/Saida"
         element={
@@ -73,7 +69,6 @@ export default function Routes() {
           </PrivateRoute>
         }
       />
-
       <Route
         path="/Cadastro"
         element={
@@ -84,19 +79,18 @@ export default function Routes() {
           </PrivateRoute>
         }
       />
-
       <Route
-  path="/CadastroUser"
-  element={
-    <PrivateRoute>
-      <RotaAdmin>
-        <Screen>
-        <CadastroUser />
-        </Screen>
-      </RotaAdmin>
-    </PrivateRoute>
-  }
-/>
+        path="/CadastroUser"
+        element={
+          <PrivateRoute>
+            <RotaAdmin>
+              <Screen>
+                <CadastroUser />
+              </Screen>
+            </RotaAdmin>
+          </PrivateRoute>
+        }
+      />
     </ReactRoutes>
   )
 }

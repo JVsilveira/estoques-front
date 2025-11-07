@@ -1,23 +1,17 @@
-import React, { useContext, useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import * as XLSX from "xlsx"
 import "./Planilha.css"
-import { TransferEntrada } from "../Transfer/TransferEntrada"
-import { TransferSaida } from "../Transfer/TransferSaida"
 import axios from "axios"
-import { jwtDecode } from "jwt-decode"
+import { useAuth } from "../../api/authContext"
 
 function Planilha() {
-  const { data } = useContext(TransferEntrada)
-  const { itemSaiu } = useContext(TransferSaida)
-
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState(null)
   const [dados, setDados] = useState([])
 
-  const token = localStorage.getItem("token")
-  const decodedToken = token ? jwtDecode(token) : {}
-  const role = decodedToken?.role || ""
-  const regiaoToken = decodedToken?.regiao || ""
+  const { token, usuario } = useAuth()
+  const role = usuario?.role?.toUpperCase() || ""
+  const regiaoToken = usuario?.regiao || ""
 
   const [filters, setFilters] = useState({
     tipo: "",
@@ -29,7 +23,7 @@ function Planilha() {
   })
 
   const [regiaoSelecionada, setRegiaoSelecionada] = useState(
-    role === "ADMIN" ? "TODAS" : ""
+    role === "ADMINISTRADOR" ? "TODAS" : regiaoToken
   )
 
   const regioesDisponiveis = [
@@ -52,60 +46,62 @@ function Planilha() {
     setFilters({ ...filters, [campo]: e.target.value })
   }
 
-  const verificarStatusUso = item => {
-    return itemSaiu.some(
-      saido =>
-        saido.serialNumber === item.serialNumber &&
-        saido.modelo === item.modelo &&
-        saido.marca === item.marca
-    )
-  }
-
-  // 🔹 Carregar dados da API
   useEffect(() => {
-    if (!regiaoSelecionada && role === "ADMIN") return
+    if (!token) {
+      setErro("Usuário não autenticado")
+      setDados([])
+      setLoading(false)
+      return
+    }
 
-    setLoading(true)
-    setErro(null)
+    const fetchDados = async () => {
+      setLoading(true)
+      setErro(null)
+      console.log("Token enviado:", token)
+      let rotaAPI = "http://localhost:8000/planilhas/ativos"
 
-    const rotaAPI =
-      role === "ADMIN"
-        ? regiaoSelecionada === "TODAS"
-          ? "http://localhost:8080/admin/planilha"
-          : `http://localhost:8080/admin/planilha/${regiaoSelecionada}`
-        : `http://localhost:8080/planilha/${regiaoToken}`
+      if (role === "ADMINISTRADOR") {
+        if (regiaoSelecionada && regiaoSelecionada !== "TODAS") {
+          rotaAPI += `?regiao=${regiaoSelecionada}`
+        }
+        // Se for "TODAS", não adiciona query → backend retorna todos
+      } else {
+        rotaAPI += `?regiao=${regiaoToken}`
+      }
 
-    axios
-      .get(rotaAPI)
-      .then(response => setDados(response.data))
-      .catch(error => {
-        console.error("Erro na API, carregando dados mockados:", error)
-        const dadosMockados = [
-          {
-            tipo: "Notebook",
-            serialNumber: "ABC12345",
-            modelo: "Dell Latitude 5420",
-            marca: "Dell",
-            notaFiscal: "NF12345",
-            disponibilidade: "Em estoque",
-          },
-          {
-            tipo: "Monitor",
-            serialNumber: "XYZ98765",
-            modelo: "Samsung 24",
-            marca: "Samsung",
-            notaFiscal: "NF54321",
-            disponibilidade: "Em estoque",
-          },
-        ]
-        setDados(dadosMockados)
-      })
-      .finally(() => setLoading(false))
-  }, [regiaoSelecionada, role, regiaoToken])
+      try {
+        const response = await axios.get(rotaAPI, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
 
-  // 🔹 Filtro dos dados
-  const dadosFiltrados = dados.filter(item => {
-    return (
+        const mapeados = response.data.map(item => ({
+          tipo: item.tipo || "N/A",
+          serialNumber: item.numero_serie || "N/A",
+          modelo: item.modelo || "N/A",
+          marca: item.marca || "N/A",
+          notaFiscal: item.numero_ativo || "N/A",
+          disponibilidade: item.status || "Em estoque",
+        }))
+
+        setDados(mapeados)
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error)
+        if (error.response?.status === 401) {
+          setErro("Token inválido ou expirado. Faça login novamente.")
+        } else {
+          setErro("Erro ao carregar os dados da planilha.")
+        }
+        setDados([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchDados()
+  }, [regiaoSelecionada, role, regiaoToken, token])
+
+  const dadosFiltrados = dados.filter(
+    item =>
       item.tipo?.toLowerCase().includes(filters.tipo.toLowerCase()) &&
       item.serialNumber
         ?.toLowerCase()
@@ -116,26 +112,22 @@ function Planilha() {
         ?.toLowerCase()
         .includes(filters.notaFiscal.toLowerCase()) &&
       (filters.disponibilidade === "" ||
-        (filters.disponibilidade === "Em estoque" &&
-          (item.disponibilidade || "") === "Em estoque") ||
-        (filters.disponibilidade === "Em uso" && verificarStatusUso(item)))
-    )
-  })
+        item.disponibilidade === filters.disponibilidade)
+  )
 
-  // 🔹 Exportar para Excel
   const exportToExcel = () => {
-    if (dadosFiltrados.length === 0) {
+    if (!dadosFiltrados.length) {
       alert("Nenhum dado para exportar!")
       return
     }
 
     const dadosParaExportar = dadosFiltrados.map(item => ({
-      Tipo: item.tipo || "N/A",
-      SerialNumber: item.serialNumber || "N/A",
-      Modelo: item.modelo || "N/A",
-      Marca: item.marca || "N/A",
-      NotaFiscal: item.notaFiscal || "N/A",
-      Disponibilidade: item.disponibilidade || "N/A",
+      Tipo: item.tipo,
+      SerialNumber: item.serialNumber,
+      Modelo: item.modelo,
+      Marca: item.marca,
+      NotaFiscal: item.notaFiscal,
+      Disponibilidade: item.disponibilidade,
     }))
 
     const ws = XLSX.utils.json_to_sheet(dadosParaExportar)
@@ -149,11 +141,9 @@ function Planilha() {
       <div className="inserir">
         <div className="titulo">PLANILHA</div>
 
-        {role === "ADMIN" && (
+        {role === "ADMINISTRADOR" && (
           <div className="seletor-regiao">
-            <label htmlFor="regiao" style={{ color: "black" }}>
-              Selecione a região:
-            </label>
+            <label htmlFor="regiao">Selecione a região:</label>
             <select
               id="regiao"
               value={regiaoSelecionada}
@@ -169,8 +159,8 @@ function Planilha() {
           </div>
         )}
 
-        {loading && <div className="load-dados">Carregando dados...</div>}
-        {erro && <p style={{ color: "red" }}>{erro}</p>}
+        {loading && <div>Carregando dados...</div>}
+        {erro && <div style={{ color: "red" }}>{erro}</div>}
 
         {!loading && dados.length > 0 && (
           <div className="planilha-container">
@@ -217,40 +207,32 @@ function Planilha() {
                 </tr>
               </thead>
               <tbody>
-                {dadosFiltrados.map((item, index) => {
-                  const emUso = verificarStatusUso(item)
-                  const disponibilidade =
-                    (item.disponibilidade === "Em estoque" && "Em estoque") ||
-                    (emUso && "Em uso") ||
-                    "N/A"
-
-                  return (
-                    <tr key={index}>
-                      <td>{item.tipo || "N/A"}</td>
-                      <td>{item.serialNumber || "N/A"}</td>
-                      <td>{item.modelo || "N/A"}</td>
-                      <td>{item.marca || "N/A"}</td>
-                      <td>{item.notaFiscal || "N/A"}</td>
-                      <td
-                        style={{
-                          color:
-                            disponibilidade === "Em estoque" ? "green" : "red",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        {disponibilidade}
-                      </td>
-                    </tr>
-                  )
-                })}
+                {dadosFiltrados.map((item, index) => (
+                  <tr key={index}>
+                    <td>{item.tipo}</td>
+                    <td>{item.serialNumber}</td>
+                    <td>{item.modelo}</td>
+                    <td>{item.marca}</td>
+                    <td>{item.notaFiscal}</td>
+                    <td
+                      style={{
+                        color:
+                          item.disponibilidade === "Em estoque"
+                            ? "green"
+                            : "red",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {item.disponibilidade}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
         )}
 
-        <button onClick={exportToExcel} className="btn-download">
-          Baixar Excel
-        </button>
+        <button onClick={exportToExcel}>Baixar Excel</button>
       </div>
     </div>
   )

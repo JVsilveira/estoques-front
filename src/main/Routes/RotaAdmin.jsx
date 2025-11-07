@@ -1,33 +1,26 @@
-import { Navigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode"
+import { Navigate } from "react-router-dom"
+import { jwtDecode } from "jwt-decode" // ✅ import default
 
 const RotaAdmin = ({ children }) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("access_token")
 
-  if (!token) {
-        return <Navigate to="/login" />;
-  }
+  if (!token) return <Navigate to="/login" />
 
   try {
-    const decoded = jwtDecode(token);
+    const decoded = jwtDecode(token)
 
-    // Verifica se o token possui role ADMIN
-    const role = decoded.role || decoded.roles || decoded.perfil; // ajuste conforme seu token
+    // Normaliza role: aceita 'admin' ou 'administrador' (case-insensitive)
+    const role = decoded.role?.toLowerCase()
 
-    const isAdmin =
-      role === "ADMIN" ||
-      (Array.isArray(role) && role.includes("ADMIN"));
-
-    if (isAdmin) {
-      return children;
+    if (role === "admin" || role === "administrador") {
+      return children
     } else {
-      return Error("Usuário não autorizado para acessar esta rota.")
-      ;
+      return <div>Usuário não autorizado para acessar esta rota.</div>
     }
   } catch (error) {
-    console.error("Erro ao decodificar token:", error);
-    return <Navigate to="/login" />;
+    console.error("Erro ao decodificar token:", error)
+    return <Navigate to="/login" />
   }
-};
+}
 
-export default RotaAdmin;
+export default RotaAdmin

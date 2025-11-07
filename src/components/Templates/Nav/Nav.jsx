@@ -1,26 +1,16 @@
-import "./Nav.css";
-import React from "react";
-import { Link } from "react-router-dom";
-import { useAuth } from "../../../api/authContext";
+import "./Nav.css"
+import React from "react"
+import { Link } from "react-router-dom"
+import { useAuth } from "../../../api/authContext"
 
 export default function Nav() {
-  const { usuario } = useAuth();
+  const { usuario } = useAuth()
 
-  let isAdmin = false;
+  let isAdmin = false
 
-  if (usuario) {
-    const roles =
-      usuario.role ||
-      usuario.roles ||
-      usuario.authorities ||
-      usuario.perfil ||
-      [];
-
-    isAdmin =
-      roles === "ADMIN" ||
-      roles === "ROLE_ADMIN" ||
-      (Array.isArray(roles) &&
-        (roles.includes("ADMIN") || roles.includes("ROLE_ADMIN")));
+  if (usuario?.role) {
+    const role = usuario.role.toLowerCase() // case-insensitive
+    isAdmin = role === "admin" || role === "administrador"
   }
 
   return (
@@ -49,5 +39,5 @@ export default function Nav() {
         )}
       </nav>
     </div>
-  );
+  )
 }

@@ -7,7 +7,7 @@ import { useState } from "react"
 
 function Login() {
   const navigate = useNavigate()
-  const { login } = useAuth()
+  const { login, logout } = useAuth() // pegamos logout também
 
   const [matricula, setMatricula] = useState("")
   const [senha, setSenha] = useState("")
@@ -15,6 +15,7 @@ function Login() {
 
   const handleSubmit = async e => {
     e.preventDefault()
+    localStorage.removeItem("access_token") // reset do token antigo
     try {
       await login(matricula, senha)
       navigate("/Home")
@@ -51,9 +52,7 @@ function Login() {
                 required
               />
             </div>
-            {error && (
-              <div className="erro-login">Matrícula e/ou senha incorretos.</div>
-            )}
+            {error && <div className="erro-login">{error}</div>}
             <div className="botaoLogar">
               <button type="submit" className="logar">
                 Entrar

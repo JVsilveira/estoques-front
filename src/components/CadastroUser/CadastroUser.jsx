@@ -3,181 +3,195 @@ import axios from "axios"
 import "./CadastroUser.css"
 
 const CadastroUser = () => {
-  const [username, setUsername] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [registrationNumber, setRegistrationNumber] = useState("")
-  const [role, setRole] = useState("USER")
-  const [region, setRegion] = useState("")
+  const [nome, setNome] = useState("")
+  const [senha, setSenha] = useState("")
+  const [matricula, setMatricula] = useState("")
+  const [tipoUsuario, setTipoUsuario] = useState("USER")
+  const [cargo, setCargo] = useState("")
+  const [regiao, setRegiao] = useState("")
 
-  const [usuarios, setUsuarios] = useState([])
-  const [busca, setBusca] = useState("")
+  const [usuarios, setUsuarios] = useState([]) // tabela inicia vazia
   const [editando, setEditando] = useState(null)
   const [dadosEdit, setDadosEdit] = useState({
-    username: "",
-    registration_number: "",
-    email: "",
-    role: "",
-    region: "",
+    nome: "",
+    matricula: "",
+    tipo_usuario: "",
+    cargo: "",
+    regiao: "",
   })
 
-  useEffect(() => {
-    carregarUsuarios()
-  }, [])
+  const token = localStorage.getItem("access_token")
 
-  const carregarUsuarios = async () => {
+  // Debounce simples para não chamar a API a cada letra imediatamente
+  const [busca, setBusca] = useState("")
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      if (busca.trim() !== "") {
+        buscarUsuarios(busca)
+      } else {
+        setUsuarios([]) // limpa a tabela se o campo estiver vazio
+      }
+    }, 300) // 300ms de espera após digitação
+
+    return () => clearTimeout(delayDebounce)
+  }, [busca])
+
+  const buscarUsuarios = async termo => {
     try {
-      const token = localStorage.getItem("access_token")
-      const response = await axios.get("http://localhost:8080/users", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const response = await axios.get(
+        `http://localhost:8000/usuarios?nome=${encodeURIComponent(termo)}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
       setUsuarios(response.data)
     } catch (error) {
-      console.error("Erro ao carregar usuários:", error)
+      console.error("Erro ao buscar usuários:", error)
+      setUsuarios([])
     }
   }
 
   const handleSubmit = async e => {
     e.preventDefault()
     try {
-      const token = localStorage.getItem("access_token")
       const payload = {
-        username,
-        registration_number: registrationNumber,
-        email,
-        password,
-        role,
-        region,
+        nome,
+        matricula,
+        senha,
+        cargo,
+        regiao,
+        tipo_usuario: tipoUsuario,
       }
-      await axios.post("http://localhost:8080/users", payload, {
+      await axios.post("http://localhost:8000/usuarios/", payload, {
         headers: { Authorization: `Bearer ${token}` },
       })
       alert("Usuário cadastrado com sucesso!")
-      setUsername("")
-      setRegistrationNumber("")
-      setEmail("")
-      setPassword("")
-      setRole("USER")
-      setRegion("")
-      carregarUsuarios()
+      setNome("")
+      setMatricula("")
+      setSenha("")
+      setCargo("")
+      setRegiao("")
+      setTipoUsuario("USER")
+      setUsuarios([]) // limpa a tabela após cadastro
     } catch (error) {
       console.error("Erro ao cadastrar usuário:", error)
-      alert("Erro ao cadastrar usuário.")
+      alert(error.response?.data?.detail || "Erro ao cadastrar usuário.")
     }
   }
 
   const iniciarEdicao = usuario => {
-    setEditando(usuario.id)
+    setEditando(usuario.matricula)
     setDadosEdit({
-      username: usuario.username,
-      registration_number: usuario.registration_number,
-      email: usuario.email,
-      role: usuario.role,
-      region: usuario.region || "",
+      nome: usuario.nome,
+      matricula: usuario.matricula,
+      tipo_usuario: usuario.tipo_usuario,
+      cargo: usuario.cargo || "",
+      regiao: usuario.regiao || "",
     })
   }
 
   const cancelarEdicao = () => {
     setEditando(null)
     setDadosEdit({
-      username: "",
-      registration_number: "",
-      email: "",
-      role: "",
-      region: "",
+      nome: "",
+      matricula: "",
+      tipo_usuario: "",
+      cargo: "",
+      regiao: "",
     })
   }
 
-  const salvarEdicao = async id => {
+  const salvarEdicao = async matriculaEdicao => {
     try {
-      const token = localStorage.getItem("access_token")
-      await axios.put(`http://localhost:8080/users/${id}`, dadosEdit, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      await axios.put(
+        `http://localhost:8000/usuarios/${matriculaEdicao}`,
+        dadosEdit,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
       alert("Usuário atualizado com sucesso!")
       cancelarEdicao()
-      carregarUsuarios()
+      buscarUsuarios(busca) // atualiza a lista atual
     } catch (error) {
       console.error("Erro ao atualizar usuário:", error)
       alert("Erro ao atualizar usuário.")
     }
   }
 
-  const deletarUsuario = async id => {
+  const deletarUsuario = async matriculaDel => {
     if (!window.confirm("Tem certeza que deseja deletar este usuário?")) return
     try {
-      const token = localStorage.getItem("access_token")
-      await axios.delete(`http://localhost:8080/users/${id}`, {
+      await axios.delete(`http://localhost:8000/usuarios/${matriculaDel}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-      setUsuarios(usuarios.filter(u => u.id !== id))
+      setUsuarios(usuarios.filter(u => u.matricula !== matriculaDel))
       alert("Usuário deletado com sucesso!")
     } catch (error) {
       console.error("Erro ao deletar usuário:", error)
-      alert("Erro ao deletar.")
+      alert("Erro ao deletar usuário.")
     }
   }
-
-  const usuariosFiltrados = usuarios.filter(
-    u =>
-      u.username.toLowerCase().includes(busca.toLowerCase()) ||
-      u.registration_number.toLowerCase().includes(busca.toLowerCase())
-  )
 
   return (
     <div className="entrada">
       <div className="inserir-usuario">
         <div className="titulo">CADASTRO DE USUÁRIO</div>
+
         <div className="cad-user">
           <div className="form-user">
             <form onSubmit={handleSubmit}>
               <input
                 type="text"
                 placeholder="Nome de usuário"
-                value={username}
-                onChange={e => setUsername(e.target.value)}
+                value={nome}
+                onChange={e => setNome(e.target.value)}
                 required
               />
               <input
                 type="text"
                 placeholder="Matrícula"
-                value={registrationNumber}
-                onChange={e => setRegistrationNumber(e.target.value)}
+                value={matricula}
+                onChange={e => setMatricula(e.target.value)}
                 required
               />
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-              />
+
               <input
                 type="password"
                 placeholder="Senha"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
+                value={senha}
+                onChange={e => setSenha(e.target.value)}
                 required
               />
-              <select value={role} onChange={e => setRole(e.target.value)}>
-                <option value="USER">Usuário</option>
-                <option value="ADMIN">Administrador</option>
-              </select>
+              <input
+                type="text"
+                placeholder="Cargo/Função"
+                value={cargo}
+                onChange={e => setCargo(e.target.value)}
+              />
               <input
                 type="text"
                 placeholder="Região"
-                value={region}
-                onChange={e => setRegion(e.target.value)}
+                value={regiao}
+                onChange={e => setRegiao(e.target.value)}
               />
+              <select
+                value={tipoUsuario}
+                onChange={e => setTipoUsuario(e.target.value)}
+              >
+                <option value="usuario">Usuário</option>
+                <option value="administrador">Administrador</option>
+              </select>
+
               <button type="submit">Cadastrar</button>
             </form>
           </div>
 
           <div className="lista-usuarios">
-            <h2>Usuários Cadastrados</h2>
+            <h2>Buscar Usuários</h2>
             <input
               type="text"
-              placeholder="Buscar por nome ou matrícula..."
+              placeholder="Digite o nome do usuário..."
               value={busca}
               onChange={e => setBusca(e.target.value)}
             />
@@ -187,42 +201,32 @@ const CadastroUser = () => {
                 <tr>
                   <th>Nome</th>
                   <th>Matrícula</th>
-                  <th>Email</th>
                   <th>Função</th>
+                  <th>Cargo</th>
                   <th>Região</th>
                   <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
-                {usuariosFiltrados.map(usuario => (
-                  <tr key={usuario.id}>
-                    {editando === usuario.id ? (
+                {usuarios.map(usuario => (
+                  <tr key={usuario.matricula}>
+                    {editando === usuario.matricula ? (
                       <>
                         <td>
                           <input
-                            value={dadosEdit.username}
+                            value={dadosEdit.nome}
                             onChange={e =>
                               setDadosEdit({
                                 ...dadosEdit,
-                                username: e.target.value,
+                                nome: e.target.value,
                               })
                             }
                           />
                         </td>
+                        <td>{usuario.matricula}</td>
                         <td>
                           <input
-                            value={dadosEdit.registration_number}
-                            onChange={e =>
-                              setDadosEdit({
-                                ...dadosEdit,
-                                registration_number: e.target.value,
-                              })
-                            }
-                          />
-                        </td>
-                        <td>
-                          <input
-                            value={dadosEdit.email}
+                            value={dadosEdit.email || ""}
                             onChange={e =>
                               setDadosEdit({
                                 ...dadosEdit,
@@ -233,31 +237,44 @@ const CadastroUser = () => {
                         </td>
                         <td>
                           <select
-                            value={dadosEdit.role}
+                            value={dadosEdit.tipo_usuario}
                             onChange={e =>
                               setDadosEdit({
                                 ...dadosEdit,
-                                role: e.target.value,
+                                tipo_usuario: e.target.value,
                               })
                             }
                           >
-                            <option value="USER">Usuário</option>
-                            <option value="ADMIN">Administrador</option>
+                            <option value="usuario">Usuário</option>
+                            <option value="administrador">Administrador</option>
                           </select>
                         </td>
                         <td>
                           <input
-                            value={dadosEdit.region}
+                            value={dadosEdit.cargo || ""}
                             onChange={e =>
                               setDadosEdit({
                                 ...dadosEdit,
-                                region: e.target.value,
+                                cargo: e.target.value,
                               })
                             }
                           />
                         </td>
                         <td>
-                          <button onClick={() => salvarEdicao(usuario.id)}>
+                          <input
+                            value={dadosEdit.regiao || ""}
+                            onChange={e =>
+                              setDadosEdit({
+                                ...dadosEdit,
+                                regiao: e.target.value,
+                              })
+                            }
+                          />
+                        </td>
+                        <td>
+                          <button
+                            onClick={() => salvarEdicao(usuario.matricula)}
+                          >
                             Salvar
                           </button>
                           <button onClick={cancelarEdicao}>Cancelar</button>
@@ -265,16 +282,18 @@ const CadastroUser = () => {
                       </>
                     ) : (
                       <>
-                        <td>{usuario.username}</td>
-                        <td>{usuario.registration_number}</td>
-                        <td>{usuario.email}</td>
-                        <td>{usuario.role}</td>
-                        <td>{usuario.region || "-"}</td>
+                        <td>{usuario.nome}</td>
+                        <td>{usuario.matricula}</td>
+                        <td>{usuario.tipo_usuario}</td>
+                        <td>{usuario.cargo}</td>
+                        <td>{usuario.regiao || "-"}</td>
                         <td>
                           <button onClick={() => iniciarEdicao(usuario)}>
                             Editar
                           </button>
-                          <button onClick={() => deletarUsuario(usuario.id)}>
+                          <button
+                            onClick={() => deletarUsuario(usuario.matricula)}
+                          >
                             Excluir
                           </button>
                         </td>
