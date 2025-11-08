@@ -1,47 +1,52 @@
-import { createContext, useContext, useState, useEffect } from "react"
-import { login as loginService } from "./authService"
-import { jwtDecode } from "jwt-decode"
+import { createContext, useContext, useState } from "react";
+import { login as loginService } from "./authService";
+import {jwtDecode} from "jwt-decode"; // 🔹 import correto
 
-const AuthContext = createContext()
+const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(() => localStorage.getItem("access_token"))
+  // Estado do token
+  const [token, setToken] = useState(() => localStorage.getItem("access_token"));
+
+  // Estado do usuário decodificado
   const [usuario, setUsuario] = useState(() => {
-    const savedToken = localStorage.getItem("access_token")
-    if (!savedToken) return null
+    const savedToken = localStorage.getItem("access_token");
+    if (!savedToken) return null;
     try {
-      return jwtDecode(savedToken)
+      return jwtDecode(savedToken);
     } catch {
-      localStorage.removeItem("access_token")
-      return null
+      localStorage.removeItem("access_token");
+      return null;
     }
-  })
+  });
 
+  // Função de login
   const login = async (matricula, senha) => {
-    setToken(null)
-    setUsuario(null)
-    localStorage.removeItem("access_token")
-
     try {
-      const result = await loginService(matricula, senha)
-      if (result?.access_token) {
-        setToken(result.access_token)
-        localStorage.setItem("access_token", result.access_token)
-        setUsuario(jwtDecode(result.access_token))
-      } else {
-        throw new Error("Token não retornado pela API")
-      }
-    } catch (err) {
-      console.error("Erro no login:", err)
-      throw err
-    }
-  }
+      const result = await loginService(matricula, senha);
 
+      if (!result?.access_token) {
+        throw new Error("Token não retornado pela API");
+      }
+
+      // Salva token no estado e localStorage
+      setToken(result.access_token);
+      localStorage.setItem("access_token", result.access_token);
+
+      // Decodifica e salva usuário
+      setUsuario(jwtDecode(result.access_token));
+    } catch (err) {
+      console.error("Erro no login:", err);
+      throw err;
+    }
+  };
+
+  // Função de logout
   const logout = () => {
-    setToken(null)
-    setUsuario(null)
-    localStorage.removeItem("access_token")
-  }
+    setToken(null);
+    setUsuario(null);
+    localStorage.removeItem("access_token");
+  };
 
   return (
     <AuthContext.Provider
@@ -49,7 +54,7 @@ export const AuthProvider = ({ children }) => {
     >
       {children}
     </AuthContext.Provider>
-  )
-}
+  );
+};
 
-export const useAuth = () => useContext(AuthContext)
+export const useAuth = () => useContext(AuthContext);

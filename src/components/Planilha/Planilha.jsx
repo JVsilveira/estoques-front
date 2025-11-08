@@ -46,57 +46,59 @@ function Planilha() {
     setFilters({ ...filters, [campo]: e.target.value })
   }
 
-  useEffect(() => {
+  // Função fetchDados fora do useEffect
+  const fetchDados = async () => {
     if (!token) {
       setErro("Usuário não autenticado")
       setDados([])
-      setLoading(false)
       return
     }
 
-    const fetchDados = async () => {
-      setLoading(true)
-      setErro(null)
-      console.log("Token enviado:", token)
-      let rotaAPI = "http://localhost:8000/planilhas/ativos"
+    setLoading(true)
+    setErro(null)
+    console.log("Token enviado:", token)
 
-      if (role === "ADMINISTRADOR") {
-        if (regiaoSelecionada && regiaoSelecionada !== "TODAS") {
-          rotaAPI += `?regiao=${regiaoSelecionada}`
-        }
-        // Se for "TODAS", não adiciona query → backend retorna todos
-      } else {
-        rotaAPI += `?regiao=${regiaoToken}`
+    let rotaAPI = "http://localhost:8000/planilhas/ativos"
+
+    if (role === "ADMINISTRADOR") {
+      if (regiaoSelecionada && regiaoSelecionada !== "TODAS") {
+        rotaAPI += `?regiao=${regiaoSelecionada}`
       }
-
-      try {
-        const response = await axios.get(rotaAPI, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-
-        const mapeados = response.data.map(item => ({
-          tipo: item.tipo || "N/A",
-          serialNumber: item.numero_serie || "N/A",
-          modelo: item.modelo || "N/A",
-          marca: item.marca || "N/A",
-          notaFiscal: item.numero_ativo || "N/A",
-          disponibilidade: item.status || "Em estoque",
-        }))
-
-        setDados(mapeados)
-      } catch (error) {
-        console.error("Erro ao carregar dados:", error)
-        if (error.response?.status === 401) {
-          setErro("Token inválido ou expirado. Faça login novamente.")
-        } else {
-          setErro("Erro ao carregar os dados da planilha.")
-        }
-        setDados([])
-      } finally {
-        setLoading(false)
-      }
+    } else {
+      rotaAPI += `?regiao=${regiaoToken}`
     }
 
+    try {
+      const response = await axios.get(rotaAPI, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+
+      const mapeados = response.data.map(item => ({
+        tipo: item.tipo || "N/A",
+        serialNumber: item.numero_serie || "N/A",
+        modelo: item.modelo || "N/A",
+        marca: item.marca || "N/A",
+        notaFiscal: item.numero_ativo || "N/A",
+        disponibilidade: item.status || "Em estoque",
+        regiao: item.regiao || "N/A",
+      }))
+
+      setDados(mapeados)
+    } catch (error) {
+      console.error("Erro ao carregar dados:", error)
+      if (error.response?.status === 401) {
+        setErro("Token inválido ou expirado. Faça login novamente.")
+      } else {
+        setErro("Erro ao carregar os dados da planilha.")
+      }
+      setDados([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // useEffect chama fetchDados corretamente
+  useEffect(() => {
     fetchDados()
   }, [regiaoSelecionada, role, regiaoToken, token])
 

@@ -23,7 +23,7 @@
     "web-vitals": "^2.1.4",
     "yarn": "^1.22.22",
     "pdfjs-dist": "^3.11.174",
-    "   xlsx": "^0.17.5"
+    "xlsx": "^0.17.5"
   },
   "scripts": {
     "start": "react-scripts start",

@@ -1,16 +1,19 @@
 import { useEffect, useState } from "react"
 import axios from "axios"
 import "./CadastroUser.css"
+import { useAuth } from "../../api/authContext"
 
 const CadastroUser = () => {
+  const { token } = useAuth() // pega token diretamente do contexto
+
   const [nome, setNome] = useState("")
   const [senha, setSenha] = useState("")
   const [matricula, setMatricula] = useState("")
-  const [tipoUsuario, setTipoUsuario] = useState("USER")
+  const [tipoUsuario, setTipoUsuario] = useState("usuario")
   const [cargo, setCargo] = useState("")
   const [regiao, setRegiao] = useState("")
 
-  const [usuarios, setUsuarios] = useState([]) // tabela inicia vazia
+  const [usuarios, setUsuarios] = useState([]) // tabela de usuários
   const [editando, setEditando] = useState(null)
   const [dadosEdit, setDadosEdit] = useState({
     nome: "",
@@ -20,29 +23,26 @@ const CadastroUser = () => {
     regiao: "",
   })
 
-  const token = localStorage.getItem("access_token")
-
-  // Debounce simples para não chamar a API a cada letra imediatamente
+  // Campo de busca
   const [busca, setBusca] = useState("")
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       if (busca.trim() !== "") {
         buscarUsuarios(busca)
       } else {
-        setUsuarios([]) // limpa a tabela se o campo estiver vazio
+        setUsuarios([]) // limpa tabela se campo vazio
       }
-    }, 300) // 300ms de espera após digitação
+    }, 300)
 
     return () => clearTimeout(delayDebounce)
   }, [busca])
 
   const buscarUsuarios = async termo => {
+    if (!token) return
     try {
       const response = await axios.get(
         `http://localhost:8000/usuarios?nome=${encodeURIComponent(termo)}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       )
       setUsuarios(response.data)
     } catch (error) {
@@ -53,6 +53,8 @@ const CadastroUser = () => {
 
   const handleSubmit = async e => {
     e.preventDefault()
+    if (!token) return
+
     try {
       const payload = {
         nome,
@@ -71,8 +73,8 @@ const CadastroUser = () => {
       setSenha("")
       setCargo("")
       setRegiao("")
-      setTipoUsuario("USER")
-      setUsuarios([]) // limpa a tabela após cadastro
+      setTipoUsuario("usuario")
+      setUsuarios([]) // limpa tabela após cadastro
     } catch (error) {
       console.error("Erro ao cadastrar usuário:", error)
       alert(error.response?.data?.detail || "Erro ao cadastrar usuário.")
@@ -102,17 +104,17 @@ const CadastroUser = () => {
   }
 
   const salvarEdicao = async matriculaEdicao => {
+    if (!token) return
+
     try {
       await axios.put(
         `http://localhost:8000/usuarios/${matriculaEdicao}`,
         dadosEdit,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       )
       alert("Usuário atualizado com sucesso!")
       cancelarEdicao()
-      buscarUsuarios(busca) // atualiza a lista atual
+      buscarUsuarios(busca) // atualiza a lista
     } catch (error) {
       console.error("Erro ao atualizar usuário:", error)
       alert("Erro ao atualizar usuário.")
@@ -120,7 +122,9 @@ const CadastroUser = () => {
   }
 
   const deletarUsuario = async matriculaDel => {
+    if (!token) return
     if (!window.confirm("Tem certeza que deseja deletar este usuário?")) return
+
     try {
       await axios.delete(`http://localhost:8000/usuarios/${matriculaDel}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -139,6 +143,7 @@ const CadastroUser = () => {
         <div className="titulo">CADASTRO DE USUÁRIO</div>
 
         <div className="cad-user">
+          {/* Formulário de cadastro */}
           <div className="form-user">
             <form onSubmit={handleSubmit}>
               <input
@@ -155,7 +160,6 @@ const CadastroUser = () => {
                 onChange={e => setMatricula(e.target.value)}
                 required
               />
-
               <input
                 type="password"
                 placeholder="Senha"
@@ -182,11 +186,11 @@ const CadastroUser = () => {
                 <option value="usuario">Usuário</option>
                 <option value="administrador">Administrador</option>
               </select>
-
               <button type="submit">Cadastrar</button>
             </form>
           </div>
 
+          {/* Lista de usuários */}
           <div className="lista-usuarios">
             <h2>Buscar Usuários</h2>
             <input
@@ -216,25 +220,11 @@ const CadastroUser = () => {
                           <input
                             value={dadosEdit.nome}
                             onChange={e =>
-                              setDadosEdit({
-                                ...dadosEdit,
-                                nome: e.target.value,
-                              })
+                              setDadosEdit({ ...dadosEdit, nome: e.target.value })
                             }
                           />
                         </td>
                         <td>{usuario.matricula}</td>
-                        <td>
-                          <input
-                            value={dadosEdit.email || ""}
-                            onChange={e =>
-                              setDadosEdit({
-                                ...dadosEdit,
-                                email: e.target.value,
-                              })
-                            }
-                          />
-                        </td>
                         <td>
                           <select
                             value={dadosEdit.tipo_usuario}
@@ -253,10 +243,7 @@ const CadastroUser = () => {
                           <input
                             value={dadosEdit.cargo || ""}
                             onChange={e =>
-                              setDadosEdit({
-                                ...dadosEdit,
-                                cargo: e.target.value,
-                              })
+                              setDadosEdit({ ...dadosEdit, cargo: e.target.value })
                             }
                           />
                         </td>
@@ -264,17 +251,12 @@ const CadastroUser = () => {
                           <input
                             value={dadosEdit.regiao || ""}
                             onChange={e =>
-                              setDadosEdit({
-                                ...dadosEdit,
-                                regiao: e.target.value,
-                              })
+                              setDadosEdit({ ...dadosEdit, regiao: e.target.value })
                             }
                           />
                         </td>
                         <td>
-                          <button
-                            onClick={() => salvarEdicao(usuario.matricula)}
-                          >
+                          <button onClick={() => salvarEdicao(usuario.matricula)}>
                             Salvar
                           </button>
                           <button onClick={cancelarEdicao}>Cancelar</button>
@@ -291,9 +273,7 @@ const CadastroUser = () => {
                           <button onClick={() => iniciarEdicao(usuario)}>
                             Editar
                           </button>
-                          <button
-                            onClick={() => deletarUsuario(usuario.matricula)}
-                          >
+                          <button onClick={() => deletarUsuario(usuario.matricula)}>
                             Excluir
                           </button>
                         </td>
