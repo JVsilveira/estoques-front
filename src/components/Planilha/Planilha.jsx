@@ -3,13 +3,13 @@ import * as XLSX from "xlsx"
 import "./Planilha.css"
 import axios from "axios"
 import { useAuth } from "../../api/authContext"
-
+ 
 function Planilha() {
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState(null)
   const [dados, setDados] = useState([])
 
-  const { token, usuario } = useAuth()
+  const { token, usuario, logout } = useAuth()
   const role = usuario?.role?.toUpperCase() || ""
   const regiaoToken = usuario?.regiao || ""
 
@@ -85,9 +85,10 @@ function Planilha() {
 
       setDados(mapeados)
     } catch (error) {
-      console.error("Erro ao carregar dados:", error)
+      
       if (error.response?.status === 401) {
         setErro("Token inválido ou expirado. Faça login novamente.")
+        logout()
       } else {
         setErro("Erro ao carregar os dados da planilha.")
       }

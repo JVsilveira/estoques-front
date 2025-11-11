@@ -12,13 +12,14 @@
 .inserirCadastro {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start; /* estava space-between, o que empurrava o conteúdo */
   align-items: center;
   width: 45%;
-  height: 60%; /* Diminui para não ocupar 100% da tela */
+  height: 60%; /* substitui height fixa */
   background-color: antiquewhite;
   border-radius: 15px;
-  margin: 10px;
+  margin: 0 20px; /* um pequeno espaçamento lateral */
+
 }
 
 .formulario {
@@ -47,13 +48,14 @@
   display: flex;
   flex-direction: row;
   justify-content: space-around;
-  align-items: center;
+  align-items: baseline;
   text-align: center;
   width: 100%;
+  color: black;
 }
 
 .triagem select {
-  width: 105%;
+  width: 60%;
   margin: 10px;
 }
 
@@ -64,6 +66,12 @@
   margin: 10px;
 }
 
+.triagem button {
+  align-items: center;
+  text-align: center;
+  width:80%;
+  margin: 10px;
+}
 .planilha-container-cadastro {
   display: flex;
   margin-left: 5%;

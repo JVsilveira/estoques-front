@@ -4,7 +4,7 @@ import "./CadastroUser.css"
 import { useAuth } from "../../api/authContext"
 
 const CadastroUser = () => {
-  const { token } = useAuth() // pega token diretamente do contexto
+  const { token, logout } = useAuth() // pega token diretamente do contexto
 
   const [nome, setNome] = useState("")
   const [senha, setSenha] = useState("")
@@ -46,7 +46,7 @@ const CadastroUser = () => {
       )
       setUsuarios(response.data)
     } catch (error) {
-      console.error("Erro ao buscar usuários:", error)
+      logout()
       setUsuarios([])
     }
   }

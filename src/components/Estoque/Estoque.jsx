@@ -5,10 +5,10 @@ import { jwtDecode } from "jwt-decode"
 import "./Estoque.css"
 
 function Estoque() {
-  const { token } = useAuth()
+  const { token, logout } = useAuth()
   const decoded = token ? jwtDecode(token) : null
-  const role = decoded?.role || "USER"
-  const regiaoToken = decoded?.regiao || "SP" // para usuários comuns
+  const role = decoded?.role?.toLowerCase() || "usuario"
+  const regiaoToken = decoded?.regiao || null
 
   const regioesDisponiveis = [
     "TODAS",
@@ -28,112 +28,70 @@ function Estoque() {
   ]
 
   const [regiaoSelecionada, setRegiaoSelecionada] = useState(
-    role === "ADMIN" ? "TODAS" : regiaoToken
+    role === "administrador" ? "TODAS" : regiaoToken
   )
 
-  const [quantidades, setQuantidades] = useState({
-    "Teclado com fio": 0,
-    "Mouse com fio": 0,
-    "Teclado/Mouse com fio": 0,
-    Mochila: 0,
-    "Suporte Ergonômico": 0,
-    "Headset Bilateral": 0,
-    "Headset Unilateral": 0,
-    "Cabo de segurança": 0,
-    "HUB usb": 0,
-    Dockstation: 0,
-    "Headset premium": 0,
-    Webcam: 0,
-    "Mouse sem fio": 0,
-    "Teclado sem fio": 0,
-    "LENOVO T14 G2": 0,
-    "LENOVO T14 G4": 0,
-    "LENOVO NEO 50Q": 0,
-    "LENOVO M80Q": 0,
-    "LENOVO S22E": 0,
-    "LENOVO T22": 0,
-    "DELL P2422H": 0,
-  })
-
+  const [dadosEstoque, setDadosEstoque] = useState({ perifericos: [], ativos: [], regiao: "" })
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState(null)
 
+  // ---------------------------
+  // 🔄 Buscar dados do backend
+  // ---------------------------
   useEffect(() => {
-    if (!regiaoSelecionada) return
+    if (!token) return
 
     setLoading(true)
     setErro(null)
 
-    if (process.env.NODE_ENV === "development") {
-      console.log("🔧 Ambiente de desenvolvimento: carregando dados fake.")
-
-      const dadosFake = {
-        "Teclado com fio": 5,
-        "Mouse com fio": 3,
-        "Teclado/Mouse com fio": 2,
-        Mochila: 4,
-        "Suporte Ergonômico": 1,
-        "Headset Bilateral": 3,
-        "Headset Unilateral": 2,
-        "Cabo de segurança": 5,
-        "HUB usb": 3,
-        Dockstation: 1,
-        "Headset premium": 2,
-        Webcam: 3,
-        "Mouse sem fio": 2,
-        "Teclado sem fio": 4,
-        "LENOVO T14 G2": 1,
-        "LENOVO T14 G4": 0,
-        "LENOVO NEO 50Q": 3,
-        "LENOVO M80Q": 2,
-        "LENOVO S22E": 1,
-        "LENOVO T22": 1,
-        "DELL P2422H": 2,
-      }
-
-      setTimeout(() => {
-        setQuantidades(prev => ({ ...prev, ...dadosFake }))
-        setLoading(false)
-      }, 1000)
-      return
-    }
-
+    // Monta a rota — sempre /estoque, com ?regiao= para admin
     const rotaAPI =
-      role === "ADMIN"
-        ? regiaoSelecionada === "TODAS"
-          ? "http://localhost:8080/admin/estoque"
-          : `http://localhost:8080/admin/estoque/${regiaoSelecionada}`
-        : `http://localhost:8080/estoque/${regiaoToken}`
+      role === "administrador"
+        ? `http://localhost:8000/estoque${regiaoSelecionada && regiaoSelecionada !== "TODAS"
+            ? `?regiao=${regiaoSelecionada}`
+            : ""}`
+        : "http://localhost:8000/estoque"
 
     axios
-      .get(rotaAPI)
-      .then(response => {
-        setQuantidades(prev => ({ ...prev, ...response.data }))
+      .get(rotaAPI, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       })
-      .catch(error => {
+      .then((response) => {
+        setDadosEstoque(response.data)
+      })
+      .catch((error) => {
         console.error("Erro ao buscar os dados da API:", error)
-        setErro("Erro ao carregar os dados.")
+        setErro("Erro ao carregar os dados do estoque.")
+        logout()
       })
       .finally(() => {
         setLoading(false)
       })
-  }, [regiaoSelecionada, role, regiaoToken])
+  }, [regiaoSelecionada, role, token])
 
-  const renderLinha = item => (
-    <tr key={item}>
-      <td>{item}</td>
+  // ---------------------------
+  // 🧾 Renderizar linha
+  // ---------------------------
+  const renderLinha = (item) => (
+    <tr key={item.item}>
+      <td>{item.item}</td>
       <td>
-        <input type="number" value={quantidades[item]} readOnly />
+        <input type="number" value={item.quantidade} readOnly />
       </td>
     </tr>
   )
 
+  // ---------------------------
+  // 🖼️ Interface
+  // ---------------------------
   return (
     <div className="Home">
       <div className="quantidades">
         <div className="titulo">ESTOQUE ARKLOK TIM</div>
 
-        {role === "ADMIN" && (
+        {role === "administrador" && (
           <div className="seletor-regiao">
             <label htmlFor="regiao" style={{ color: "black" }}>
               Selecione a região:
@@ -141,16 +99,11 @@ function Estoque() {
             <select
               id="regiao"
               value={regiaoSelecionada}
-              onChange={e => {
-                const novaRegiao = e.target.value
-                console.log("Região selecionada:", novaRegiao)
-                setRegiaoSelecionada(novaRegiao)
-              }}
+              onChange={(e) => setRegiaoSelecionada(e.target.value)}
             >
-              <option value="TODAS">Todas</option>
-              {regioesDisponiveis.map(regiao => (
-                <option key={regiao} value={regiao}>
-                  {regiao}
+              {regioesDisponiveis.map((r) => (
+                <option key={r} value={r}>
+                  {r}
                 </option>
               ))}
             </select>
@@ -163,66 +116,29 @@ function Estoque() {
         {!loading && !erro && (
           <div className="ativos">
             <div className="tabelas-container-estoque">
-              {/* TABELA 1 */}
+              {/* PERIFÉRICOS */}
               <table className="tabela-estoque">
                 <thead>
                   <tr>
-                    <th>Item</th>
+                    <th>Periférico</th>
                     <th>Quantidade</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {[
-                    "Teclado com fio",
-                    "Mouse com fio",
-                    "Teclado/Mouse com fio",
-                    "Mochila",
-                    "Suporte Ergonômico",
-                    "Headset Bilateral",
-                    "Headset Unilateral",
-                  ].map(renderLinha)}
+                  {dadosEstoque.perifericos.map(renderLinha)}
                 </tbody>
               </table>
 
-              {/* TABELA 2 */}
+              {/* ATIVOS */}
               <table className="tabela-estoque">
                 <thead>
                   <tr>
-                    <th>Item</th>
+                    <th>Ativo</th>
                     <th>Quantidade</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {[
-                    "Cabo de segurança",
-                    "HUB usb",
-                    "Dockstation",
-                    "Headset premium",
-                    "Webcam",
-                    "Mouse sem fio",
-                    "Teclado sem fio",
-                  ].map(renderLinha)}
-                </tbody>
-              </table>
-
-              {/* TABELA 3 */}
-              <table className="tabela-estoque">
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th>Quantidade</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    "LENOVO T14 G2",
-                    "LENOVO T14 G4",
-                    "LENOVO NEO 50Q",
-                    "LENOVO M80Q",
-                    "LENOVO S22E",
-                    "LENOVO T22",
-                    "DELL P2422H",
-                  ].map(renderLinha)}
+                  {dadosEstoque.ativos.map(renderLinha)}
                 </tbody>
               </table>
             </div>
