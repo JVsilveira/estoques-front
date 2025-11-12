@@ -213,8 +213,9 @@ const [regiaoSelecionadaPerifericos, setRegiaoSelecionadaPerifericos] = useState
         <form onSubmit={handleSubmitAtivo}>
           <div className="triagem">
           {role === "administrador" && (
-            <div className="seletor-regiao">
-              <label>Região (Ativos):</label>
+            <div >
+              <label>Região</label>
+             
               <select
                 value={regiaoSelecionadaAtivos}
                 onChange={(e) => setRegiaoSelecionadaAtivos(e.target.value)}
@@ -232,7 +233,7 @@ const [regiaoSelecionadaPerifericos, setRegiaoSelecionadaPerifericos] = useState
           
             <div>
               <label>Tipo:</label>
-              <br />
+              
               <select
                 value={tipoAtivo}
                 onChange={e => setTipoAtivo(e.target.value)}
@@ -249,7 +250,7 @@ const [regiaoSelecionadaPerifericos, setRegiaoSelecionadaPerifericos] = useState
 
             <div>
               <label>Modelo:</label>
-              <br />
+              
               <input
                 type="text"
                 value={modeloAtivo}
@@ -260,7 +261,7 @@ const [regiaoSelecionadaPerifericos, setRegiaoSelecionadaPerifericos] = useState
 
             <div>
               <label>Marca:</label>
-              <br />
+              
               <input
                 type="text"
                 value={marcaAtivo}
@@ -271,7 +272,7 @@ const [regiaoSelecionadaPerifericos, setRegiaoSelecionadaPerifericos] = useState
 
             <div>
               <label>Nota Fiscal:</label>
-              <br />
+              
               <input
                 type="text"
                 value={notaFiscalAtivo}
@@ -282,7 +283,7 @@ const [regiaoSelecionadaPerifericos, setRegiaoSelecionadaPerifericos] = useState
 
             <div>
               <label>Quantidade:</label>
-              <br />
+              
               <input
                 type="number"
                 min="1"
@@ -291,9 +292,9 @@ const [regiaoSelecionadaPerifericos, setRegiaoSelecionadaPerifericos] = useState
                 required
               />
             </div>
-
             <div>
-              <button
+              <br />
+             <button
                 type="button"
                 className="btn-add"
                 onClick={handleAdicionarAtivo}
@@ -301,9 +302,10 @@ const [regiaoSelecionadaPerifericos, setRegiaoSelecionadaPerifericos] = useState
                 Adicionar
               </button>
             </div>
-          </div>
+           </div>
 
           {/* tabela de ativos */}
+          <br />
           <div className="planilha-container-cadastro">
             <table className="planilha-tabela">
               <thead>
@@ -362,8 +364,8 @@ const [regiaoSelecionadaPerifericos, setRegiaoSelecionadaPerifericos] = useState
         <form onSubmit={handleSubmitPeriferico}>
           <div className="triagem">
           {role === "administrador" && (
-            <div className="seletor-regiao">
-              <label>Região (Periféricos):</label>
+            <div>
+              <label>Região</label>
               <select
                 value={regiaoSelecionadaPerifericos}
                 onChange={(e) => setRegiaoSelecionadaPerifericos(e.target.value)}
@@ -381,7 +383,7 @@ const [regiaoSelecionadaPerifericos, setRegiaoSelecionadaPerifericos] = useState
           
             <div>
               <label>Tipo:</label>
-              <br />
+              
               <select
                 value={tipoPeriferico}
                 onChange={e => setTipoPeriferico(e.target.value)}
@@ -400,7 +402,7 @@ const [regiaoSelecionadaPerifericos, setRegiaoSelecionadaPerifericos] = useState
 
             <div>
               <label>Quantidade:</label>
-              <br />
+              
               <input
                 type="number"
                 min="1"
@@ -411,9 +413,9 @@ const [regiaoSelecionadaPerifericos, setRegiaoSelecionadaPerifericos] = useState
             </div>
 
             <div>
+              <br />
               <button
                 type="button"
-                className="btn-add"
                 onClick={handleAdicionarPeriferico}
               >
                 Adicionar
@@ -422,6 +424,7 @@ const [regiaoSelecionadaPerifericos, setRegiaoSelecionadaPerifericos] = useState
           </div>
 
           {/* tabela de periféricos */}
+          <br />
           <div className="planilha-container-cadastro">
             <table className="planilha-tabela">
               <thead>

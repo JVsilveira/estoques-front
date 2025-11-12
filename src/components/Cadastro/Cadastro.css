@@ -19,7 +19,7 @@
   background-color: antiquewhite;
   border-radius: 15px;
   margin: 0 20px; /* um pequeno espaçamento lateral */
-
+  overflow: hidden;
 }
 
 .formulario {
@@ -55,14 +55,14 @@
 }
 
 .triagem select {
-  width: 60%;
+  width: 90%;
   margin: 10px;
 }
 
 .triagem input {
   align-items: center;
   text-align: center;
-  width: 40%;
+  width: 60%;
   margin: 10px;
 }
 
@@ -71,12 +71,22 @@
   text-align: center;
   width:80%;
   margin: 10px;
+
 }
+
+.triagem div{
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
 .planilha-container-cadastro {
   display: flex;
   margin-left: 5%;
   width: 130%;
-  max-height: 200px;
+  max-height: 350px;
   overflow-y: auto;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE e Edge */
@@ -110,4 +120,132 @@
 .planilha-tabela td input {
   width: 95%;
   box-sizing: border-box;
+}
+
+.botao{
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 1024px) {
+
+  .inserirCadastro {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* estava space-between, o que empurrava o conteúdo */
+  align-items: center;
+  width: 50%;
+  height: 60%; /* substitui height fixa */
+  background-color: antiquewhite;
+  border-radius: 15px;
+  margin: 0 20px; /* um pequeno espaçamento lateral */
+  padding: 0;
+
+}
+
+  .triagem {
+    font-size: 10px;
+  }
+
+  .triagem select {
+font-size: 10px;
+}
+
+.triagem input {
+font-size: 10px;
+}
+
+.triagem button {
+font-size: 10px;
+
+}
+.titulo {
+font-size: 12px;
+}
+
+.btn-download{
+font-size: 10px;
+}
+
+
+  .planilha-container-cadastro {
+    width: 130%;
+    margin-left: 20px;
+    max-height: 200px; /* altura reduzida */
+      }
+
+  .planilha-tabela th,
+  .planilha-tabela td {
+    font-size: 10px;
+    padding: 6px;
+  }
+    .btn-remove {
+    font-size:10px ;
+    height: 20px;
+    width: 50px;
+    text-align: center;
+    padding: 2px;
+  }
+}
+
+/* Telas ainda menores (ex: 768px ou menos) */
+@media (max-width: 860px) {
+ .inserirCadastro {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* estava space-between, o que empurrava o conteúdo */
+  align-items: center;
+  width: 50%;
+  height: 60%; /* substitui height fixa */
+  background-color: antiquewhite;
+  border-radius: 15px;
+  margin: 0 20px; /* um pequeno espaçamento lateral */
+  padding: 0;
+
+}
+
+  .triagem {
+    font-size: 10px;
+  }
+
+  .triagem select {
+font-size: 8px;
+}
+
+.triagem input {
+font-size: 8px;
+}
+
+.triagem button {
+font-size: 8px;
+
+}
+.titulo {
+font-size: 10px;
+}
+
+.btn-download{
+font-size: 8px;
+}
+
+  .planilha-container-cadastro {
+    width: 120%;
+    margin-left: 35px;
+    max-height: 200px; /* altura reduzida */
+      }
+
+  .planilha-tabela th,
+  .planilha-tabela td {
+    font-size: 7px;
+    padding: 6px;
+  }
+    .btn-remove {
+    font-size:8px ;
+    height: 20px;
+    width: 40px;
+
+
+  }
 }
