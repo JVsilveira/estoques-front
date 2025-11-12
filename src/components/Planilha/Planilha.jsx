@@ -72,6 +72,7 @@ function Planilha() {
       const response = await axios.get(rotaAPI, {
         headers: { Authorization: `Bearer ${token}` },
       })
+      console.log("Resposta da API:", response.data)
 
       const mapeados = response.data.map(item => ({
         tipo: item.tipo || "N/A",

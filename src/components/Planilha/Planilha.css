@@ -20,6 +20,14 @@
   border-radius: 15px;
 }
 
+.seletor-regiao{
+  color: black;
+}
+
+.seletor-regiao label, .seletor-regiao select {
+  margin: 10px;
+}
+
 .planilha-container {
   margin-top: 5vh;
   margin-bottom: 2vh;
