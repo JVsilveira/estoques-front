@@ -1,306 +1,195 @@
-import React, { useState } from "react"
-import "./Entrada.css"
-import { useContext } from "react"
-import { TransferEntrada } from "../Transfer/TransferEntrada"
-import api from "../../api/api"
-import { extractPdfText } from "../Utility/pdfUtils"
+import React, { useState, useMemo } from "react";
+import "./Entrada.css";
+import { uploadPdfs } from "../Utils/uploadPdfs";
+import { PieChart, Pie, Tooltip, Cell, Legend } from "recharts";
+import { encaminharValidos } from "../Utils/encaminharValidos";
+import { useAuth } from "../../api/authContext";
 
 function Entrada() {
-  const [error, setError] = useState("")
-  const [notebookTipo, setNotebookTipo] = useState("")
-  const [notebookModel, setNotebookModel] = useState("")
-  const [notebookBrand, setNotebookBrand] = useState("")
-  const [modelMonitor, setModelMonitor] = useState("")
-  const [serialMonitor, setSerialMonitor] = useState("")
-  const [serialNumber, setSerialNumber] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [accessories, setAccessories] = useState([])
-  const { addData } = useContext(TransferEntrada)
+  const { usuario } = useAuth()
+  const role = usuario?.role?.toUpperCase() || ""
+  const regiaoToken = usuario?.regiao || ""
+  const [files, setFiles] = useState([]);
+  const [resultado, setResultado] = useState(null);
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState("");
+  const [regiaoSelecionada, setRegiaoSelecionada] = useState(
+      role === "ADMINISTRADOR" ? "TODAS" : regiaoToken
+    )
 
-  const handleFileChange = async event => {
-    const file = event.target.files[0]
-    if (file) {
-      setError("")
-      setNotebookTipo("")
-      setNotebookModel("")
-      setNotebookBrand("")
-      setSerialNumber("")
-      setModelMonitor("")
-      setSerialMonitor("")
-      setLoading(true)
-      setAccessories([])
+  const regioesDisponiveis = [
+    "PISA", "SIGMA", "LAPA", "TRJ", "CEO",
+    "MG", "RS", "SEMINÁRIO", "CE", "BA",
+    "PE", "PA", "DF",
+  ];
 
-      try {
-        const text = await extractPdfText(file)
-        console.log("Texto extraído do PDF:", text)
+  const handleFileChange = (e) => {
+    setFiles(Array.from(e.target.files));
+    setResultado(null);
+    setError("");
+  };
 
-        const notebookTipoMatch = text.match(/tipo[^\w]+([A-Za-z0-9\s\-]+)/i)
-        const notebookModelMatch = text.match(/modelo[^\w]+([A-Za-z0-9\s\-]+)/i)
-        const notebookBrandMatch = text.match(/marca[^\w]+([A-Za-z0-9\s\-]+)/i)
-        const serialNumberMatch = text.match(
-          /nº de série\s*[:\-\s]*([A-Za-z0-9]+)/i
-        )
+const handleUpload = async () => {
+  if (!files.length) return;
 
-        if (notebookTipoMatch) {
-          setNotebookTipo(notebookTipoMatch[1])
-        }
+  try {
+    setProcessing(true);
+    setError("");
 
-        if (notebookModelMatch) {
-          setNotebookModel(notebookModelMatch[1])
-        }
+    const data = await uploadPdfs(
+      files,
+      "ENTRADA",
+      role ==="ADMINISTRADOR" ? "TODAS" : regiaoToken
+    );
 
-        if (notebookBrandMatch) {
-          setNotebookBrand(notebookBrandMatch[1])
-        }
-
-        if (serialNumberMatch) {
-          const cleanedSerialNumber = serialNumberMatch[1]?.replace(/\s+/g, "")
-          setSerialNumber(cleanedSerialNumber || "")
-        }
-
-        // Função para extrair dados do monitor
-        const monitorSectionMatch = (text, peripheralsList) => {
-          const match = text.match(
-            /Monitor.*?(Sim\s*Sim|Não\s*Não|Sim\s*Não|Não\s*Sim)/i
-          )
-          if (match) {
-            console.log("Texto extraído da seção do Monitor:", match[0])
-            const sectionText = match[0]
-            const secondTermMatch = sectionText.match(/(Sim|Não)\s*(Sim|Não)$/i)
-            if (secondTermMatch && secondTermMatch[2] === "Sim") {
-              const modelMatch = sectionText.match(
-                /Marca\/Modelo:\s*([^\)]+?)\s*Nro Série\s*:/i
-              )
-              const serialMatch = sectionText.match(
-                /Série\s*[:\-\s]*([A-Za-z0-9\-]+)/i
-              )
-              if (modelMatch) setModelMonitor(modelMatch[1].trim())
-              if (serialMatch) setSerialMonitor(serialMatch[1].trim())
-              peripheralsList.push({
-                item: "Monitor",
-                status: "Sim Sim",
-                model: modelMatch ? modelMatch[1].trim() : "",
-                serial: serialMatch ? serialMatch[1].trim() : "",
-              })
-              console.log("Monitor adicionado à lista de periféricos:", {
-                model: modelMatch ? modelMatch[1].trim() : "",
-                serial: serialMatch ? serialMatch[1].trim() : "",
-              })
-            } else {
-              console.log(
-                "Monitor não foi devolvido (segundo termo não é 'Sim')."
-              )
-            }
-          }
-        }
-
-        const peripheralsSectionMatch = text.match(
-          /ACESSÓRIOS[\s\S]+?Docusign Envelope ID:/i
-        )
-        if (peripheralsSectionMatch) {
-          const peripheralsText = peripheralsSectionMatch[0]
-          console.log("Texto dos periféricos:", peripheralsText)
-
-          const captureSpecificAccessory = (item, text) => {
-            const escapedItem = item.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&")
-            const regex = new RegExp(
-              `(${escapedItem})\\s*\\(([^)]+)\\)\\s*(Sim\\s*Sim|Não\\s*Sim)`,
-              "i"
-            )
-            const match = text.match(regex)
-            if (match) {
-              const name = match[1].trim()
-              const additionalInfo = match[2].trim()
-              const status = match[3].trim()
-              console.log(
-                `Item encontrado: ${name} - Info adicional: ${additionalInfo} - Status: ${status}`
-              )
-              if (status === "Sim Sim" || status === "Não Sim") {
-                peripheralsList.push({ name, additionalInfo, status })
-              }
-            } else {
-              console.log(`Não encontrado: ${item}`)
-            }
-          }
-
-          const captureAccessory = (item, text) => {
-            const escapedItem = item.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&")
-            const regex = new RegExp(
-              `(${escapedItem})\\s*(Sim\\s*Sim|Não\\s*Sim)`,
-              "i"
-            )
-            const match = text.match(regex)
-            if (match) {
-              const status = match[2] ? match[2].trim() : ""
-              console.log(`Item encontrado: ${item} - Status: ${status}`)
-              if (status === "Sim Sim" || status === "Não Sim") {
-                peripheralsList.push({ item, status })
-              }
-            } else {
-              console.log(`Não encontrado: ${item}`)
-            }
-          }
-
-          const accessoryList = [
-            "Mouse",
-            "Teclado",
-            "Monitor",
-            "Cabo RCA",
-            "Cabo paralelo para unidade externa",
-            "Maleta/Mochila para Notebook",
-            "Suporte Ergonômico",
-            "Cabo de Segurança Código chave - )",
-            "Bateria Extra",
-            "Carregador Extra",
-            "Adaptador HDMI",
-            "Dock Station",
-            "Lacre de Segurança",
-            "Headset",
-            "Kit boas-vindas",
-            "Webcam",
-            "Hub USB",
-            "Cabo de força do monitor",
-          ].map(item => item.trim())
-
-          console.log("Lista de acessórios:", accessoryList)
-
-          const peripheralsList = []
-
-          accessoryList.forEach(item => {
-            if (
-              item === "Headset" ||
-              item === "Dock Station" ||
-              item === "Cabo de Segurança Código chave - )"
-            ) {
-              captureSpecificAccessory(item, peripheralsText)
-            } else {
-              captureAccessory(item, peripheralsText)
-            }
-          })
-
-          monitorSectionMatch(text, peripheralsList)
-
-          const filteredPeripherals = peripheralsList.filter(
-            peripheral =>
-              peripheral.status === "Sim Sim" || peripheral.status === "Não Sim"
-          )
-
-          console.log("Acessórios filtrados:", filteredPeripherals)
-
-          setAccessories(
-            filteredPeripherals.map(
-              peripheral => peripheral.name || peripheral.item
-            )
-          )
-        }
-      } catch (err) {
-        setError("Falha ao ler PDF.")
-        console.error("Error reading PDF:", err)
-      } finally {
-        setLoading(false)
-      }
-    }
+    console.log("RESULTADO UPLOAD:", data);
+    setResultado(data);
+  } catch (err) {
+    console.error(err);
+    setError("Erro ao processar PDFs");
+  } finally {
+    setProcessing(false);
   }
+};
 
-  const handleEnviarParaServidor = async () => {
-    const accessoriesCounted = accessories.map(item => ({
-      name: item,
-      quantidade: 1,
-    }))
+  // ---------- DADOS PARA O GRÁFICO ----------
+  const chartData = useMemo(() => {
+    if (!resultado) return [];
+    return [
+      { name: "Termos válidos", value: resultado.quantidade_validos || 0 },
+      { name: "Termos inválidos", value: resultado.quantidade_invalidos || 0 },
+    ];
+  }, [resultado]);
 
-    // Adiciona o notebook como ativo principal
-    accessoriesCounted.push({ name: notebookModel, quantidade: 1 })
-
-    // Se houver monitor, adiciona também
-    if (modelMonitor && serialMonitor) {
-      accessoriesCounted.push({
-        name: modelMonitor,
-        quantidade: 1,
-        serialNumber: serialMonitor,
-      })
+  const enviarTermosValidos = async () => {
+    if (!resultado?.termos_validos?.length) {
+      alert("Nenhum termo válido encontrado.");
+      return;
     }
 
-    // Monta o objeto conforme o backend FastAPI espera (AssetInput)
-    const linhasParaPlanilha = [
-      {
-        assetNumber: serialNumber || "N/A",
-        serialNumber: serialNumber || "N/A",
-        tipo: notebookTipo || "N/A",
-        modelo: notebookModel || "N/A",
-        marca: notebookBrand || "N/A",
-        nfNumber: "N/A",
-        accessoriesCounted,
-        disponibilidade: "Disponível",
-      },
-    ]
-
-    // Adiciona o monitor como ativo separado, se existir
-    if (modelMonitor || serialMonitor) {
-      linhasParaPlanilha.push({
-        assetNumber: serialMonitor || "N/A",
-        serialNumber: serialMonitor || "N/A",
-        tipo: "Monitor",
-        modelo: modelMonitor || "N/A",
-        marca: "N/A",
-        nfNumber: "N/A",
-        accessoriesCounted: [],
-        disponibilidade: "Disponível",
-      })
-    }
+    setProcessing(true);
 
     try {
-      console.log("Enviando dados ao backend:", linhasParaPlanilha)
-      for (const linha of linhasParaPlanilha) {
-        await api.post("/assets/json", linha)
-      }
-      alert("Dados enviados ao servidor com sucesso!")
-    } catch (error) {
-      console.error("Erro ao enviar dados:", error)
-      alert("Erro ao enviar dados para o servidor.")
+      await encaminharValidos(
+        resultado.termos_validos,
+        resultado.contexto
+      );
+      alert("Ativos e periféricos cadastrados com sucesso!");
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao cadastrar ativos ou periféricos.");
+    } finally {
+      setProcessing(false);
     }
-  }
+  };
+
   return (
     <div className="entrada">
       <div className="inserir">
         <div className="titulo">ENTRADA DE ATIVOS</div>
+
         <div className="arquivo">
           <input
             type="file"
             accept="application/pdf"
+            multiple
             onChange={handleFileChange}
           />
-          {loading && <div>Carregando...</div>}
+          {processing && <div>Carregando...</div>}
           {error && <div className="error">{error}</div>}
-        </div>
-        <div className="ativos">
-          <div className="notebook">
-            <h3>Modelo do Ativo:</h3>
-            <p>Tipo: {notebookTipo}</p>
-            <p>Marca: {notebookBrand}</p>
-            <p>Modelo: {notebookModel}</p>
-            <p>Serial: {serialNumber}</p>
-          </div>
-          <div className="monitor">
-            <h3>Monitor:</h3>
-            <p>Modelo: {modelMonitor}</p>
-            <p>Número de Série: {serialMonitor}</p>
-          </div>
+       </div>
 
-          <div className="acessorios">
-            <h3>Acessórios:</h3>
-            <ul>
-              {accessories.map((accessory, index) => (
-                <li key={index}>{accessory}</li>
+        {/* ===== SELETOR DE REGIÃO (ADMIN) ===== */}
+        {role ==="ADMINISTRADOR" && (
+          <div className="select-regiao">
+            <label>Região do estoque:</label>
+            <select
+              value={regiaoSelecionada}
+              onChange={(e) => setRegiaoSelecionada(e.target.value)}
+            >
+              <option value="">Selecione a região</option>
+              {regioesDisponiveis.map((uf) => (
+                <option key={uf} value={uf}>
+                  {uf}
+                </option>
               ))}
-            </ul>
+            </select>
           </div>
-        </div>
-        <button className="btn-download" onClick={handleEnviarParaServidor}>
-          Enviar para Planilha
+        )}
+
+        <button
+          onClick={handleUpload}
+          disabled={
+            processing ||
+            !files.length ||
+            (role === "ADMINISTRADOR" && !regiaoSelecionada)
+          }
+        >
+          {processing ? "Processando..." : "Processar PDFs"}
         </button>
+        
+
+        <div className="resultado-container">
+          {resultado && (
+            <div className="resultado">
+              <h3>Resumo da auditoria</h3>
+
+              <PieChart width={300} height={300}>
+                <Pie data={chartData} dataKey="value" nameKey="name" label>
+                  <Cell fill="#16a34a" />
+                  <Cell fill="#dc2626" />
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+
+              <p>
+                <strong>Válidos:</strong>{" "}
+                {resultado.quantidade_validos || 0}
+              </p>
+              <p>
+                <strong>Inválidos:</strong>{" "}
+                {resultado.quantidade_invalidos || 0}
+              </p>
+
+              {resultado.quantidade_invalidos > 0 && (
+                <div className="erros">
+                  <h4>Termos inválidos</h4>
+                  <ul>
+                    {resultado.termos_invalidos.map((termo, idx) => (
+                      <li key={idx}>
+                        <strong>{termo.arquivo}</strong>
+                        <ul>
+                          {termo.erros_descricao?.map((erro, i) => (
+                            <li key={i}>{erro}</li>
+                          ))}
+                        </ul>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {resultado.quantidade_validos > 0 && (
+                <button
+                  className="btn-validos"
+                  onClick={enviarTermosValidos}
+                  disabled={processing}
+                >
+                  Encaminhar somente termos válidos
+                </button>
+              )}
+
+              <p className="aviso">
+                Apenas os termos corretos e totalmente validados serão enviados
+                ao estoque.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default Entrada
+export default Entrada;

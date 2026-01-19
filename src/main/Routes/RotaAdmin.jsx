@@ -4,7 +4,7 @@ import { jwtDecode } from "jwt-decode" // ✅ import default
 const RotaAdmin = ({ children }) => {
   const token = localStorage.getItem("access_token")
 
-  if (!token) return <Navigate to="/login" />
+  if (!token) return <Navigate to="/" />
 
   try {
     const decoded = jwtDecode(token)
@@ -19,7 +19,7 @@ const RotaAdmin = ({ children }) => {
     }
   } catch (error) {
     console.error("Erro ao decodificar token:", error)
-    return <Navigate to="/login" />
+    return <Navigate to="/" />
   }
 }
 

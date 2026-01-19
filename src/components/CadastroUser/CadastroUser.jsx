@@ -114,7 +114,7 @@ const CadastroUser = () => {
       )
       alert("Usuário atualizado com sucesso!")
       cancelarEdicao()
-      buscarUsuarios(busca) // atualiza a lista
+      buscarUsuarios(busca) 
     } catch (error) {
       console.error("Erro ao atualizar usuário:", error)
       alert("Erro ao atualizar usuário.")

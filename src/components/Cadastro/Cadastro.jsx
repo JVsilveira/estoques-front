@@ -1,42 +1,27 @@
 import React, { useState } from "react"
 import "./Cadastro.css"
 import api from "../../api/api"
-import { useAuth } from "../../api/authContext" // ✅ já contém token e usuário decodificado
+import { useAuth } from "../../api/authContext" // 
 
 function Cadastro() {
-  // ---------- Autenticação ----------
-  const { token, usuario } = useAuth()
-  const role = usuario?.role || null
-  const regiaoToken = usuario?.regiao || null
+  const { usuario, token } = useAuth()
+  const role = usuario?.role?.toUpperCase() || ""
+  const regiaoToken = usuario?.regiao || ""
 
   // ---------- Regiões ----------
+  const regioesDisponiveis = [
+    "PISA", "SIGMA", "LAPA", "TRJ", "CEO", "MG", "RS",
+    "SEMINÁRIO", "CE", "BA", "PE", "PA", "DF",
+  ]
 
-const regioesDisponiveis = [
-  "PISA",
-  "SIGMA",
-  "LAPA",
-  "TRJ",
-  "CEO",
-  "MG",
-  "RS",
-  "SEMINÁRIO",
-  "CE",
-  "BA",
-  "PE",
-  "PA",
-  "DF",
-];
+  // ---------- Seletores de Região ----------
+  const [regiaoSelecionadaAtivos, setRegiaoSelecionadaAtivos] = useState(
+    role === "ADMINISTRADOR" ? "" : regiaoToken
+  )
 
-
-// Seletor de região para ATIVOS
-const [regiaoSelecionadaAtivos, setRegiaoSelecionadaAtivos] = useState(
-  role === "administrador" ? "TODAS" : regiaoToken
-);
-
-// Seletor de região para PERIFÉRICOS
-const [regiaoSelecionadaPerifericos, setRegiaoSelecionadaPerifericos] = useState(
-  role === "administrador" ? "TODAS" : regiaoToken
-);
+  const [regiaoSelecionadaPerifericos, setRegiaoSelecionadaPerifericos] = useState(
+    role === "ADMINISTRADOR" ? "" : regiaoToken
+  )
 
   // ---------- Estados de Ativos ----------
   const [modeloAtivo, setModeloAtivo] = useState("")
@@ -53,7 +38,7 @@ const [regiaoSelecionadaPerifericos, setRegiaoSelecionadaPerifericos] = useState
   const [loadingPeriferico, setLoadingPeriferico] = useState(false)
   const [perifericosList, setPerifericosList] = useState([])
 
-  // ---------- ATIVOS ----------
+  
   const handleAdicionarAtivo = () => {
     if (!tipoAtivo || !modeloAtivo || !marcaAtivo || !notaFiscalAtivo) {
       alert("Preencha todos os campos antes de adicionar o ativo.")
@@ -82,61 +67,49 @@ const [regiaoSelecionadaPerifericos, setRegiaoSelecionadaPerifericos] = useState
     setAtivosList(novos)
   }
 
-  const handleSubmitAtivo = async e => {
+ const handleSubmitAtivo = async e => {
     e.preventDefault()
 
-    if (ativosList.length === 0) {
-      alert("Adicione ao menos um ativo antes de cadastrar.")
+    if (!ativosList.length) {
+      alert("Adicione ao menos um ativo.")
       return
     }
 
     if (ativosList.some(a => !a.numero_serie)) {
-      alert("Preencha todos os números de série antes de cadastrar.")
+      alert("Preencha todos os números de série.")
       return
     }
 
-    const regiaoFinal =
-      role === "administrador" ? regiaoSelecionadaAtivos : regiaoToken
-
-    if (!regiaoFinal) {
-      alert("Selecione uma região antes de cadastrar.")
+    if (role === "ADMINISTRADOR" && !regiaoSelecionadaAtivos) {
+      alert("Administrador deve selecionar uma região.")
       return
     }
 
     setLoadingAtivo(true)
 
     try {
-        const payloadAtivos = {
-          regiao: role === "administrador" ? regiaoSelecionadaAtivos : regiaoToken,
-          ativos: ativosList.map((a) => ({
-            tipo_item: a.tipo_item,
-            marca: a.marca,
-            modelo: a.modelo,
-            nota_fiscal: a.nota_fiscal,
-            numero_serie: a.numero_serie,
-          })),
+      await api.post(
+        "/entrada",
+        {
+          regiao: role === "ADMINISTRADOR" ? regiaoSelecionadaAtivos : regiaoToken,
+          contexto: "ENTRADA",
+          ativos: ativosList,
           perifericos: [],
-        };
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
 
-        console.log("Payload enviado:", JSON.stringify(payloadAtivos, null, 2));
-
-        await api.post("/entrada", payloadAtivos, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        alert("Ativos cadastrados com sucesso!");
-        setTipoAtivo("");
-        setModeloAtivo("");
-        setMarcaAtivo("");
-        setNotaFiscalAtivo("");
-        setQuantidadeAtivo(1);
-        setAtivosList([]);
-      } catch (error) {
-        console.error("Erro ao cadastrar ativos:", error);
-        alert("Erro ao cadastrar ativos.");
-      } finally {
-        setLoadingAtivo(false);
-      }
+      alert("Ativos cadastrados com sucesso!")
+      setAtivosList([])
+      setTipoAtivo("")
+      setModeloAtivo("")
+      setMarcaAtivo("")
+      setNotaFiscalAtivo("")
+    } catch {
+      alert("Erro ao cadastrar ativos.")
+    } finally {
+      setLoadingAtivo(false)
+    }
   }
 
   // ---------- PERIFÉRICOS ----------
@@ -158,50 +131,43 @@ const [regiaoSelecionadaPerifericos, setRegiaoSelecionadaPerifericos] = useState
     setPerifericosList(perifericosList.filter((_, i) => i !== index))
   }
 
-  const handleSubmitPeriferico = async e => {
+   const handleSubmitPeriferico = async e => {
     e.preventDefault()
 
-    if (perifericosList.length === 0) {
-      alert("Adicione ao menos um periférico antes de cadastrar.")
+    if (!perifericosList.length) {
+      alert("Adicione ao menos um periférico.")
       return
     }
 
-    const regiaoFinal =
-      role === "administrador" ? regiaoSelecionadaPerifericos : regiaoToken
-
-    if (!regiaoFinal) {
-      alert("Selecione uma região antes de cadastrar.")
+    if (role === "ADMINISTRADOR" && !regiaoSelecionadaPerifericos) {
+      alert("Administrador deve selecionar uma região.")
       return
     }
 
     setLoadingPeriferico(true)
 
-      try {
-        const payloadPerifericos = {
-          regiao: role === "administrador" ? regiaoSelecionadaPerifericos : regiaoToken,
-          ativos: [],
-          perifericos: perifericosList.map((p) => ({
-          tipo_item: p.tipo_item,
-          quantidade: p.quantidade,
-          })),
-        }
+    try {
+  for (const periferico of perifericosList) {
+    await api.post(
+      "/perifericos",
+      {
+        tipo_item: periferico.tipo_item,
+        quantidade: periferico.quantidade,
+        contexto: "ENTRADA",
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    )
+  }
 
-          console.log("Payload enviado:", JSON.stringify(payloadPerifericos, null, 2));
-
-          await api.post("/entrada", payloadPerifericos, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-
-          alert("Periféricos cadastrados com sucesso!");
-          setTipoPeriferico("");
-          setQuantidadePeriferico(1);
-          setPerifericosList([]);
-        } catch (error) {
-          console.error("Erro ao cadastrar periféricos:", error);
-          alert("Erro ao cadastrar periféricos.");
-        } finally {
-          setLoadingPeriferico(false);
-        }
+  alert("Periféricos cadastrados com sucesso!")
+  setPerifericosList([])
+  setTipoPeriferico("")
+} catch (error) {
+  console.error(error)
+  alert("Erro ao cadastrar periféricos.")
+}
   }
 
   // ---------- JSX ----------
@@ -212,7 +178,7 @@ const [regiaoSelecionadaPerifericos, setRegiaoSelecionadaPerifericos] = useState
         <div className="titulo">CADASTRO DE ATIVOS</div>
         <form onSubmit={handleSubmitAtivo}>
           <div className="triagem">
-          {role === "administrador" && (
+          {role === "ADMINISTRADOR" && (
             <div >
               <label>Região</label>
              
@@ -244,7 +210,6 @@ const [regiaoSelecionadaPerifericos, setRegiaoSelecionadaPerifericos] = useState
                 <option value="desktop">Desktop</option>
                 <option value="minidesktop">Minidesktop</option>
                 <option value="monitor">Monitor</option>
-                <option value="headset">Headset</option>
               </select>
             </div>
 
@@ -363,7 +328,7 @@ const [regiaoSelecionadaPerifericos, setRegiaoSelecionadaPerifericos] = useState
         <div className="titulo">CADASTRO DE PERIFÉRICOS</div>
         <form onSubmit={handleSubmitPeriferico}>
           <div className="triagem">
-          {role === "administrador" && (
+          {role === "ADMINISTRADOR" && (
             <div>
               <label>Região</label>
               <select
@@ -390,6 +355,7 @@ const [regiaoSelecionadaPerifericos, setRegiaoSelecionadaPerifericos] = useState
                 required
               >
                 <option value="">Selecione</option>
+                <option value="headset">Headset</option>
                 <option value="teclado">Teclado</option>
                 <option value="mouse">Mouse</option>
                 <option value="mochila">Mochila</option>

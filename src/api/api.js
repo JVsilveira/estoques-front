@@ -34,7 +34,7 @@ api.interceptors.response.use(
       if (response.status === 401) {
         console.warn("Token inválido ou expirado. Redirecionando para login...")
         localStorage.removeItem("access_token")
-        window.location.href = "/login"
+        window.location.href = "/"
       } else if (response.status >= 500) {
         console.error("Erro interno no servidor (500).")
       }

@@ -9,6 +9,8 @@ function Estoque() {
   const decoded = token ? jwtDecode(token) : null
   const role = decoded?.role?.toLowerCase() || "usuario"
   const regiaoToken = decoded?.regiao || null
+  const normalizar = (v) =>
+  typeof v === "string" ? v.trim().toUpperCase() : v; 
 
   const regioesDisponiveis = [
     "TODAS",
@@ -74,14 +76,32 @@ function Estoque() {
   // ---------------------------
   // 🧾 Renderizar linha
   // ---------------------------
-  const renderLinha = (item) => (
-    <tr key={item.item}>
-      <td>{item.item}</td>
-      <td>
-        <input type="number" value={item.quantidade} readOnly />
-      </td>
-    </tr>
-  )
+const renderLinha = (item) => (
+  <tr key={normalizar(item.item)}>
+    <td>{normalizar(item.item)}</td>
+    <td>
+      <input type="number" value={item.quantidade} readOnly />
+    </td>
+  </tr>
+)
+const agruparItens = (lista) => {
+  const mapa = {}
+
+  lista.forEach((item) => {
+    const nome = normalizar(item.item)
+
+    if (!mapa[nome]) {
+      mapa[nome] = {
+        item: nome,
+        quantidade: 0
+      }
+    }
+
+    mapa[nome].quantidade += item.quantidade
+  })
+
+  return Object.values(mapa)
+}
 
   // ---------------------------
   // 🖼️ Interface
@@ -138,7 +158,7 @@ function Estoque() {
                   </tr>
                 </thead>
                 <tbody>
-                  {dadosEstoque.ativos.map(renderLinha)}
+                  {agruparItens(dadosEstoque.ativos).map(renderLinha)}
                 </tbody>
               </table>
             </div>

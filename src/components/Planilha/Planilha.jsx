@@ -166,8 +166,9 @@ function Planilha() {
         {loading && <div>Carregando dados...</div>}
         {erro && <div style={{ color: "red" }}>{erro}</div>}
 
-        {!loading && dados.length > 0 && (
+        
           <div className="planilha-container">
+            {!loading && dados.length > 0 && (
             <table className="planilha-tabela">
               <thead>
                 <tr>
@@ -233,8 +234,9 @@ function Planilha() {
                 ))}
               </tbody>
             </table>
+            )}
           </div>
-        )}
+        
 
         <button onClick={exportToExcel}>Baixar Excel</button>
       </div>
